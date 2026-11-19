@@ -43,29 +43,29 @@
     var sky = $('sky-bg'), sun = $('sky-sun'), stars = $('sky-stars'), horizon = document.querySelector('.sky-horizon');
     var header = document.querySelector('.app-header');
     var top, mid, bottom, horizonColor, sunColor, sunTop, starOpacity, headerGrad;
-    // 参考图配色：上部冷蓝灰云层 → 中部暖金云光 → 下部蓝灰，整体柔和的黄昏天色
+    // 参考图：黄昏晚霞——上部蓝灰云 → 中部粉紫橙 → 下部暖金光，柔和温暖
     if (h >= 6 && h < 9) {          // 黎明
       var t = (h - 6) / 3;
-      top = mix([196, 206, 218], [186, 200, 216], t);
-      mid = mix([240, 210, 178], [244, 222, 190], t);
-      bottom = mix([176, 190, 204], [184, 198, 210], t);
-      horizonColor = 'rgba(248,214,170,.5)'; sunColor = '#fbe3b0'; sunTop = 150 - t * 40; starOpacity = 0.1 * (1 - t);
-      headerGrad = 'linear-gradient(120deg, rgba(150,170,192,.92), rgba(214,186,158,.9) 55%, rgba(176,168,172,.92))';
+      top = mix([186, 194, 210], [196, 200, 214], t);
+      mid = mix([228, 198, 206], [238, 212, 196], t);
+      bottom = mix([242, 210, 178], [248, 222, 190], t);
+      horizonColor = 'rgba(250,214,170,.55)'; sunColor = '#fbe0b4'; sunTop = 150 - t * 40; starOpacity = 0.1 * (1 - t);
+      headerGrad = 'linear-gradient(120deg, rgba(198,204,218,.96), rgba(232,206,204,.96) 55%, rgba(244,220,192,.96))';
     } else if (h >= 9 && h < 16) {   // 白天
-      top = '#c3d3e2'; mid = '#e8e0d4'; bottom = '#b6c4d2';
-      horizonColor = 'rgba(255,244,224,.4)'; sunColor = '#fff8e6'; sunTop = 44; starOpacity = 0;
-      headerGrad = 'linear-gradient(120deg, rgba(140,168,196,.9), rgba(200,196,186,.88) 55%, rgba(158,176,196,.9))';
-    } else if (h >= 16 && h < 19) {  // 黄昏：蓝灰 + 暖金云光（贴合参考图）
+      top = '#c6d5e4'; mid = '#ece4da'; bottom = '#f3e6d4';
+      horizonColor = 'rgba(255,246,228,.45)'; sunColor = '#fff8e8'; sunTop = 44; starOpacity = 0;
+      headerGrad = 'linear-gradient(120deg, rgba(206,218,230,.96), rgba(236,228,218,.96) 55%, rgba(246,232,214,.96))';
+    } else if (h >= 16 && h < 19) {  // 黄昏晚霞（主基调，贴合参考图）
       var t2 = (h - 16) / 3;
-      top = '#bfd0de';
-      mid = mix([240, 210, 172], [236, 190, 150], t2);
-      bottom = mix([150, 168, 188], [176, 160, 170], t2);
-      horizonColor = 'rgba(246,196,140,.55)'; sunColor = '#f7c491'; sunTop = 96 + t2 * 40; starOpacity = t2 * 0.12;
-      headerGrad = 'linear-gradient(120deg, rgba(130,156,184,.92), rgba(212,170,132,.9) 54%, rgba(160,140,150,.92))';
-    } else {                          // 夜晚：深一点的蓝灰，保留暖金余晖
-      top = '#7e93a8'; mid = '#9a92a0'; bottom = '#5f7186';
-      horizonColor = 'rgba(140,150,175,.35)'; sunColor = '#e8dfd0'; sunTop = 170; starOpacity = 0.4;
-      headerGrad = 'linear-gradient(120deg, rgba(74,92,116,.94), rgba(120,108,124,.92) 55%, rgba(96,100,120,.94))';
+      top = mix([178, 186, 204], [150, 158, 188], t2);
+      mid = mix([226, 190, 196], [236, 176, 158], t2);
+      bottom = mix([244, 212, 176], [246, 196, 158], t2);
+      horizonColor = 'rgba(250,190,140,.6)'; sunColor = '#f8c58e'; sunTop = 96 + t2 * 36; starOpacity = t2 * 0.12;
+      headerGrad = 'linear-gradient(120deg, rgba(176,184,204,.96), rgba(232,182,168,.96) 52%, rgba(246,206,170,.96))';
+    } else {                          // 夜晚：深蓝灰配暖粉余晖
+      top = '#6e7f96'; mid = '#8a8090'; bottom = '#c9906f';
+      horizonColor = 'rgba(180,150,160,.4)'; sunColor = '#e8d8c8'; sunTop = 170; starOpacity = 0.4;
+      headerGrad = 'linear-gradient(120deg, rgba(96,110,134,.97), rgba(130,112,120,.97) 55%, rgba(180,140,120,.97))';
       sun.style.opacity = '0.4';
     }
     if (h >= 6 && h < 19) sun.style.opacity = '1';
@@ -75,104 +75,112 @@
     horizon.style.background = horizonColor;
     sun.style.background = sunColor;
     sun.style.top = sunTop + 'px';
-    sun.style.boxShadow = '0 0 44px 16px ' + sunColor;
+    sun.style.boxShadow = '0 0 48px 18px ' + sunColor;
     stars.style.opacity = starOpacity;
   }
   function mix(a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); }
   function rgb(a) { return 'rgb(' + a[0] + ',' + a[1] + ',' + a[2] + ')'; }
 
-  // ---------- 矢量猫头（重点色布偶/暹罗风，只要头）----------
-  // 蓬松奶油白脸 + 深棕面罩与耳朵 + 大蓝眼 + 粉鼻，参考图可爱风
+  // ---------- 可爱像素猫头（重点色，耳朵醒目）----------
+  // 像素网格绘制：大三角耳 + 圆脸 + 深棕重点色面罩 + 大圆蓝眼 + 粉鼻
   function renderCat(cat) {
     var S = '';
-    function add(s) { S += s; }
-
-    // 配色
-    var fur = '#F4ECDF', furLight = '#FBF6ED', furShade = '#E3D6C2', furEdge = '#D8C9B0';
-    var point = '#5E4636', pointDeep = '#4A3527', pointSoft = '#6E5544';
-    var inner = '#E7A9AC', nose = '#D8919A', eyeIris = '#7FB0CC', eyeIrisDeep = '#5A8CA8', eyeDeep = '#31586E';
-
-    // ---- 耳朵（深棕，重点色）----
-    add('<path d="M18 50 Q14 22 20 20 Q28 20 40 34 Z" fill="' + point + '"/>');
-    add('<path d="M82 50 Q86 22 80 20 Q72 20 60 34 Z" fill="' + point + '"/>');
-    // 耳内绒毛
-    add('<path d="M24 44 Q22 30 25 28 Q30 29 36 36 Z" fill="' + inner + '"/>');
-    add('<path d="M76 44 Q78 30 75 28 Q70 29 64 36 Z" fill="' + inner + '"/>');
-    // 耳尖小毛
-    add('<path d="M20 22 l-3 -5 M21 20 l2 -6" stroke="' + fur + '" stroke-width="1.4" stroke-linecap="round"/>');
-    add('<path d="M80 22 l3 -5 M79 20 l-2 -6" stroke="' + fur + '" stroke-width="1.4" stroke-linecap="round"/>');
-
-    // ---- 蓬松头型：主体 + 一圈绒毛 ---- 
-    // 主体
-    add('<path d="M60 26 C92 26 104 48 104 68 C104 92 86 104 60 104 C34 104 16 92 16 68 C16 48 28 26 60 26 Z" fill="' + fur + '"/>');
-    // 顶部绒毛高光
-    add('<path d="M40 34 Q60 24 80 34 Q60 32 40 34 Z" fill="' + furLight + '" opacity=".8"/>');
-    // 两侧脸颊绒毛（三角小簇，蓬松感）
-    add('<path d="M16 62 l-8 -3 l7 6 l-9 2 l9 5 l-8 6 l10 2 z" fill="' + fur + '" stroke="' + furEdge + '" stroke-width=".8"/>');
-    add('<path d="M104 62 l8 -3 l-7 6 l9 2 l-9 5 l8 6 l-10 2 z" fill="' + fur + '" stroke="' + furEdge + '" stroke-width=".8"/>');
-    // 下巴绒毛
-    add('<path d="M46 102 l-2 6 l6 -4 l3 6 l4 -6 l3 5 l4 -5 z" fill="' + fur + '"/>');
-
-    // ---- 深棕面罩（覆盖口鼻 + 眼周，重点色标志）----
-    add('<path d="M60 38 C78 38 86 50 86 64 C86 82 74 92 60 92 C46 92 34 82 34 64 C34 50 42 38 60 38 Z" fill="' + point + '" opacity=".92"/>');
-    // 面罩渐变柔化边缘
-    add('<ellipse cx="60" cy="70" rx="26" ry="22" fill="' + pointSoft + '" opacity=".5"/>');
-    // 额头中间浅色分界（让面罩呈经典倒三角）
-    add('<path d="M60 38 L52 56 Q60 62 68 56 Z" fill="' + point + '" opacity=".7"/>');
-
-    // ---- 眼睛（大而圆，随心情）----
-    if (cat === 'bull') {           // 极多：闪亮大眼 + 高光
-      add('<ellipse cx="45" cy="60" rx="10" ry="11" fill="#fff"/><ellipse cx="75" cy="60" rx="10" ry="11" fill="#fff"/>');
-      add('<ellipse cx="45" cy="60" rx="8" ry="9" fill="' + eyeIris + '"/><ellipse cx="75" cy="60" rx="8" ry="9" fill="' + eyeIris + '"/>');
-      add('<circle cx="45" cy="61" r="4.5" fill="' + eyeDeep + '"/><circle cx="75" cy="61" r="4.5" fill="' + eyeDeep + '"/>');
-      add('<circle cx="42" cy="56" r="2.6" fill="#fff"/><circle cx="72" cy="56" r="2.6" fill="#fff"/>');
-      add('<circle cx="48" cy="64" r="1.4" fill="#fff"/><circle cx="78" cy="64" r="1.4" fill="#fff"/>');
-    } else if (cat === 'happy') {   // 偏多：弯月笑眼
-      add('<path d="M36 61 q9 -11 18 0" stroke="' + eyeDeep + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>');
-      add('<path d="M66 61 q9 -11 18 0" stroke="' + eyeDeep + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>');
-    } else if (cat === 'worried') { // 偏空：下垂眼 + 小高光
-      add('<ellipse cx="45" cy="60" rx="9" ry="10" fill="#fff"/><ellipse cx="75" cy="60" rx="9" ry="10" fill="#fff"/>');
-      add('<ellipse cx="45" cy="62" rx="6" ry="6" fill="' + eyeIris + '"/><ellipse cx="75" cy="62" rx="6" ry="6" fill="' + eyeIris + '"/>');
-      add('<circle cx="45" cy="62" r="3.2" fill="' + eyeDeep + '"/><circle cx="75" cy="62" r="3.2" fill="' + eyeDeep + '"/>');
-      add('<path d="M36 52 q9 3 18 0" stroke="' + pointDeep + '" stroke-width="2" fill="none" stroke-linecap="round"/>');
-      add('<path d="M66 52 q9 3 18 0" stroke="' + pointDeep + '" stroke-width="2" fill="none" stroke-linecap="round"/>');
-    } else if (cat === 'bear') {    // 极空：紧闭眼 + 泪光
-      add('<path d="M37 58 q8 6 16 0" stroke="' + furLight + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
-      add('<path d="M67 58 q8 6 16 0" stroke="' + furLight + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
-      add('<path d="M43 68 q2 5 0 8" stroke="#8FB8CF" stroke-width="2.4" fill="none" stroke-linecap="round"/>');
-    } else {                        // calm 淡定：圆蓝眼
-      add('<ellipse cx="45" cy="60" rx="9" ry="10" fill="#fff"/><ellipse cx="75" cy="60" rx="9" ry="10" fill="#fff"/>');
-      add('<ellipse cx="45" cy="60" rx="7" ry="8" fill="' + eyeIris + '"/><ellipse cx="75" cy="60" rx="7" ry="8" fill="' + eyeIris + '"/>');
-      add('<circle cx="45" cy="60" r="3.6" fill="' + eyeDeep + '"/><circle cx="75" cy="60" r="3.6" fill="' + eyeDeep + '"/>');
-      add('<circle cx="42.5" cy="57" r="2" fill="#fff"/><circle cx="72.5" cy="57" r="2" fill="#fff"/>');
+    var U = 6; // 像素单位
+    function px(col, row, w, h, color) {
+      return '<rect x="' + (col * U) + '" y="' + (row * U) + '" width="' + (w * U) +
+        '" height="' + (h * U) + '" fill="' + color + '"/>';
     }
 
-    // ---- 鼻子（粉色小三角）----
-    add('<path d="M56 68 q4 -3 8 0 q-4 5 -8 0 Z" fill="' + nose + '"/>');
+    var O = '#4A3527', P = '#5E4636', F = '#F4ECDF', FL = '#FBF6ED';
+    var IN = '#E7A9AC', NO = '#D8919A', IB = '#7FB0CC', ID = '#31586E';
+
+    // ---- 像素基础图：耳朵(大三角) + 头 + 面罩 ----
+    var BASE = [
+      '....................',
+      '..OO............OO..',
+      '..OPO..........OPO..',
+      '..OPPO........OPPO..',
+      '..OPPPO......OPPPO..',
+      '..OPPPPO....OPPPPO..',
+      '.OPPPPPPOOOOPPPPPPO.',
+      '.OFFFFFFFFFFFFFFFFO.',
+      '.OFFFFFFFFFFFFFFFFO.',
+      '.OFFFFFFFFFFFFFFFFO.',
+      '.OFFFFPPPPPPPPFFFFO.',
+      '.OFFFPPPPPPPPPPFFFO.',
+      '.OFFPPPPPPPPPPPPFFO.',
+      '.OFFPPPPPPPPPPPPFFO.',
+      '.OFFFPPPPPPPPPPFFFO.',
+      '.OFFFFFFFFFFFFFFFFO.',
+      '.OFFFFFFFFFFFFFFFFO.',
+      '..OFFFFFFFFFFFFFFO..',
+      '...OOOOOOOOOOOOOO...',
+      '....................'
+    ];
+    var map = { '.': null, O: O, P: P, F: F };
+    for (var r = 0; r < BASE.length; r++) {
+      var line = BASE[r];
+      for (var c = 0; c < line.length; c++) {
+        var col = map[line[c]];
+        if (col) S += px(c, r, 1, 1, col);
+      }
+    }
+
+    // ---- 耳内粉色像素 ----
+    S += px(4, 3, 2, 2, IN) + px(14, 3, 2, 2, IN);
+    S += px(5, 5, 1, 1, IN) + px(14, 5, 1, 1, IN);
+
+    // ---- 大眼睛（大而圆，像素猫可爱感）----
+    var lx = 42, rx = 78, ey = 58;
+    if (cat === 'bull') {           // 极多：闪亮大眼
+      S += '<ellipse cx="' + lx + '" cy="' + ey + '" rx="10" ry="11" fill="#fff"/><ellipse cx="' + rx + '" cy="' + ey + '" rx="10" ry="11" fill="#fff"/>';
+      S += '<ellipse cx="' + lx + '" cy="' + ey + '" rx="8" ry="9" fill="' + IB + '"/><ellipse cx="' + rx + '" cy="' + ey + '" rx="8" ry="9" fill="' + IB + '"/>';
+      S += '<circle cx="' + lx + '" cy="' + (ey + 1) + '" r="4.5" fill="' + ID + '"/><circle cx="' + rx + '" cy="' + (ey + 1) + '" r="4.5" fill="' + ID + '"/>';
+      S += '<circle cx="' + (lx - 3) + '" cy="' + (ey - 4) + '" r="2.6" fill="#fff"/><circle cx="' + (rx - 3) + '" cy="' + (ey - 4) + '" r="2.6" fill="#fff"/>';
+      S += '<circle cx="' + (lx + 3) + '" cy="' + (ey + 4) + '" r="1.4" fill="#fff"/><circle cx="' + (rx + 3) + '" cy="' + (ey + 4) + '" r="1.4" fill="#fff"/>';
+    } else if (cat === 'happy') {   // 偏多：弯月笑眼
+      S += '<path d="M' + (lx - 9) + ' ' + (ey + 1) + ' q9 -11 18 0" stroke="' + ID + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>';
+      S += '<path d="M' + (rx - 9) + ' ' + (ey + 1) + ' q9 -11 18 0" stroke="' + ID + '" stroke-width="3.2" fill="none" stroke-linecap="round"/>';
+    } else if (cat === 'worried') { // 偏空：下垂眼
+      S += '<ellipse cx="' + lx + '" cy="' + ey + '" rx="9" ry="10" fill="#fff"/><ellipse cx="' + rx + '" cy="' + ey + '" rx="9" ry="10" fill="#fff"/>';
+      S += '<ellipse cx="' + lx + '" cy="' + (ey + 2) + '" rx="6" ry="6" fill="' + IB + '"/><ellipse cx="' + rx + '" cy="' + (ey + 2) + '" rx="6" ry="6" fill="' + IB + '"/>';
+      S += '<circle cx="' + lx + '" cy="' + (ey + 2) + '" r="3.2" fill="' + ID + '"/><circle cx="' + rx + '" cy="' + (ey + 2) + '" r="3.2" fill="' + ID + '"/>';
+      S += '<path d="M' + (lx - 9) + ' ' + (ey - 8) + ' q9 3 18 0" stroke="' + O + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+      S += '<path d="M' + (rx - 9) + ' ' + (ey - 8) + ' q9 3 18 0" stroke="' + O + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    } else if (cat === 'bear') {    // 极空：紧闭眼 + 泪
+      S += '<path d="M' + (lx - 8) + ' ' + (ey - 2) + ' q8 6 16 0" stroke="' + FL + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+      S += '<path d="M' + (rx - 8) + ' ' + (ey - 2) + ' q8 6 16 0" stroke="' + FL + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+      S += '<path d="M' + (lx - 2) + ' ' + (ey + 8) + ' q2 5 0 8" stroke="#8FB8CF" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    } else {                        // calm 淡定：圆蓝眼
+      S += '<ellipse cx="' + lx + '" cy="' + ey + '" rx="9" ry="10" fill="#fff"/><ellipse cx="' + rx + '" cy="' + ey + '" rx="9" ry="10" fill="#fff"/>';
+      S += '<ellipse cx="' + lx + '" cy="' + ey + '" rx="7" ry="8" fill="' + IB + '"/><ellipse cx="' + rx + '" cy="' + ey + '" rx="7" ry="8" fill="' + IB + '"/>';
+      S += '<circle cx="' + lx + '" cy="' + ey + '" r="3.6" fill="' + ID + '"/><circle cx="' + rx + '" cy="' + ey + '" r="3.6" fill="' + ID + '"/>';
+      S += '<circle cx="' + (lx - 2.5) + '" cy="' + (ey - 3) + '" r="2" fill="#fff"/><circle cx="' + (rx - 2.5) + '" cy="' + (ey - 3) + '" r="2" fill="#fff"/>';
+    }
+
+    // ---- 像素粉鼻 ----
+    S += px(9, 11, 2, 1, NO) + px(8, 12, 4, 1, NO) + px(9, 13, 2, 1, NO);
 
     // ---- 嘴（随心情）----
-    if (cat === 'bull') add('<path d="M54 76 q6 8 12 0" stroke="' + furLight + '" stroke-width="2.4" fill="#7a3b3b" stroke-linecap="round"/>');
-    else if (cat === 'happy') add('<path d="M54 75 q6 6 12 0" stroke="' + furLight + '" stroke-width="2.3" fill="none" stroke-linecap="round"/>');
-    else if (cat === 'worried') add('<path d="M54 77 q4 -3 6 0 q2 3 6 0" stroke="' + furLight + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>');
-    else if (cat === 'bear') add('<ellipse cx="60" cy="78" rx="6" ry="4.5" fill="#4a2a2a"/>');
-    else add('<path d="M55 75 h10" stroke="' + furLight + '" stroke-width="2.2" stroke-linecap="round"/>');
+    if (cat === 'bull') S += '<path d="M54 82 q6 8 12 0" stroke="' + FL + '" stroke-width="2.4" fill="#7a3b3b" stroke-linecap="round"/>';
+    else if (cat === 'happy') S += '<path d="M54 81 q6 6 12 0" stroke="' + FL + '" stroke-width="2.3" fill="none" stroke-linecap="round"/>';
+    else if (cat === 'worried') S += '<path d="M54 83 q4 -3 6 0 q2 3 6 0" stroke="' + FL + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+    else if (cat === 'bear') S += '<ellipse cx="60" cy="84" rx="6" ry="4.5" fill="#4a2a2a"/>';
+    else S += '<path d="M55 82 h10" stroke="' + FL + '" stroke-width="2.2" stroke-linecap="round"/>';
 
-    // ---- 胡须（白色细线）----
-    add('<path d="M26 70 l-14 -3 M26 76 l-14 3 M94 70 l14 -3 M94 76 l14 3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>');
+    // ---- 胡须 ----
+    S += '<path d="M24 72 l-14 -3 M24 78 l-14 3 M96 72 l14 -3 M96 78 l14 3" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".85"/>';
 
     // ---- 心情装饰 ----
     if (cat === 'bull') {
-      add(heart(100, 20, 1.0, '#FF3D6E'));
-      add(heart(6, 40, 0.7, '#FF7A9C'));
-      add('<path d="M70 24 l1.6 4 4 .4 -3 2.8 .9 4 -3.5 -2.2 -3.5 2.2 .9 -4 -3 -2.8 4 -.4 z" fill="#FFD54A"/>');
+      S += heart(102, 16, 1.0, '#FF3D6E') + heart(4, 40, 0.7, '#FF7A9C');
+      S += '<path d="M70 20 l1.8 4.4 4.4 .4 -3.4 3.1 1 4.4 -3.8 -2.4 -3.8 2.4 1 -4.4 -3.4 -3.1 4.4 -.4 z" fill="#FFD54A"/>';
     } else if (cat === 'happy') {
-      add(heart(100, 22, 0.9, '#FF5C85'));
-      add('<circle cx="18" cy="30" r="2" fill="#FFD54A"/>');
+      S += heart(102, 18, 0.9, '#FF5C85') + '<circle cx="16" cy="28" r="2.4" fill="#FFD54A"/>';
     } else if (cat === 'worried') {
-      add('<path d="M100 44 q-6 10 0 14 q6 -4 0 -14 z" fill="#6FC3E8"/>');
-      add('<ellipse cx="98.5" cy="50" rx="1.4" ry="2.4" fill="#cdeefb"/>');
+      S += '<path d="M102 44 q-6 10 0 14 q6 -4 0 -14 z" fill="#6FC3E8"/><ellipse cx="100.5" cy="50" rx="1.4" ry="2.4" fill="#cdeefb"/>';
     } else if (cat === 'bear') {
-      add(poisonBottle(96, 40));
+      S += poisonBottle(98, 42);
     }
 
     $('cat-svg').innerHTML = S;
