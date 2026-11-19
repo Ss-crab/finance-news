@@ -1,0 +1,43 @@
+name: 每日隔夜财经速览
+
+# 每天北京时间 7:30 自动生成（UTC 23:30），同时支持手动触发
+on:
+  schedule:
+    - cron: '30 23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r scripts/requirements.txt
+
+      - name: 抓取近24小时新闻
+        run: python scripts/fetch.py
+
+      - name: 加工生成 news.json
+        run: python scripts/process.py
+
+      - name: 提交生成的数据
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/raw_news.json docs/news.json
+          if git diff --cached --quiet; then
+            echo "数据无变化，跳过提交"
+          else
+            git commit -m "chore: 更新隔夜财经数据 $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi

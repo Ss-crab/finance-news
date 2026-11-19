@@ -1,0 +1,20 @@
+{
+  "name": "隔夜财经速览",
+  "short_name": "财经速览",
+  "description": "过去24小时全球重点金融新闻，辅助次日交易判断",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0f172a",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
