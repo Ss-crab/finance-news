@@ -55,22 +55,21 @@
       <div class="mood-score" id="mood-score">--</div>
     </section>
 
-    <!-- 今日人格：点猫猫或选人格切换话语 -->
+    <!-- 今日人格：单一人格，点切换按钮循环换人，点猫猫/话语换一句 -->
     <section class="persona-section" id="persona-section">
       <div class="persona-head">
-        <span class="persona-title">今日人格 · 点猫猫换一句</span>
-        <span class="persona-hint" id="persona-hint">选一个视角看今天</span>
-      </div>
-      <div class="persona-chips" id="persona-chips">
-        <button class="persona-chip active" data-persona="buffett">巴菲特</button>
-        <button class="persona-chip" data-persona="dalio">瑞达利欧</button>
-        <button class="persona-chip" data-persona="xiayizhou">夏以昼</button>
+        <span class="persona-title">今日人格</span>
+        <button class="persona-switch" id="persona-switch" title="切换人格">
+          <span class="persona-switch-name" id="persona-switch-name">巴菲特</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+        </button>
       </div>
       <div class="persona-quote" id="persona-quote">
         <div class="quote-mark">"</div>
         <p id="persona-quote-text">选择人格后，根据今日多空情绪生成一句话…</p>
         <div class="quote-author" id="persona-quote-author"></div>
       </div>
+      <div class="persona-tip">点切换按钮换人格 · 点猫猫或话语换一句</div>
       <div class="persona-disclaimer">人格话语为风格化模拟，非本人真实观点，仅供阅读趣味。</div>
     </section>
 
