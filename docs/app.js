@@ -9,7 +9,7 @@
   var QUOTES_URL = 'quotes.json';
   var CACHE_KEY = 'overnight_news_cache_v2';
   var QCache_KEY = 'overnight_quotes_cache_v2';
-  var state = { data: null, quotes: null, market: 'all', minImportance: 1, subtopic: 'all', chart: null, chartRange: 14 };
+  var state = { data: null, quotes: null, mood: null, persona: 'buffett', quoteIndex: 0, market: 'all', minImportance: 1, subtopic: 'all', chart: null, chartRange: 14 };
 
   var MARKET_LABELS = { '中国快讯': 'A股' };
   var $ = function (id) { return document.getElementById(id); };
@@ -171,6 +171,7 @@
 
   function renderMood(mood) {
     if (!mood) return;
+    state.mood = mood;
     $('mood-label').textContent = '市场多空程度';
     $('mood-cat-mood').textContent = mood.catMood + ' · ' + mood.label;
     var s = mood.score || 0;
@@ -180,6 +181,116 @@
     scoreEl.textContent = (s > 0 ? '+' : '') + s;
     scoreEl.className = 'mood-score ' + (s > 20 ? 'pos' : s < -20 ? 'neg' : 'zero');
     renderCat(mood.cat);
+    updatePersona(); // 心情变了，话语也跟着更新
+  }
+
+  // ---------- 今日人格话语 ----------
+  // 三种人格 × 五种心情，每人每心情 3-4 句，涵盖指引/见解/历史类比/安慰。
+  // 内容为风格化模拟，非本人真实观点。
+  var PERSONAS = {
+    buffett: {
+      name: '巴菲特',
+      tag: '价值投资视角',
+      bull: [
+        '别人贪婪时我谨慎。今天的好消息很热闹，但请记住：价格是你付出的，价值是你得到的。',
+        '市场先生今天情绪高涨，愿意为你服务——但别让他替你做决定。',
+        '我从不预测市场明天涨跌，我只问：这家公司十年后还在吗？',
+      ],
+      happy: [
+        '一点好消息值得高兴，但真正的回报来自耐心，而不是频繁按键。',
+        '如果你不愿意持有十年，就别持有十分钟。今天的上涨不是卖出的理由，也不是买入的理由。',
+        '风险来自你不知道自己在做什么。先弄清手里是什么，再谈涨跌。',
+      ],
+      calm: [
+        '什么都没发生的时候，是最好的思考时间。市场先生今天没什么话要说，那就听听他沉默里的机会。',
+        '我们最喜欢的持有期是永远。今天这种平淡日子，正是长期投资者的朋友。',
+        '不要为每一次波动找理由。有时市场就是随机漫步，你需要的是纪律，不是故事。',
+      ],
+      worried: [
+        '下跌给了有准备的人机会——前提是手里有现金，也有一张想买的公司清单。',
+        '股价下跌并不意味着公司变差，往往只是别人情绪变了。别忘了两者区别。',
+        '我只会在水温合适时下水。今天可以是观望日，观望也是一种仓位。',
+      ],
+      bear: [
+        '别人恐惧时我贪婪——但请先确认你恐惧的是价格，还是价值真的变了。',
+        '1929、1987、2008，每一次暴跌后都有人绝望，也都有人买入了好公司。历史不会简单重复，但押韵。',
+        '最坏的时候，优秀企业的内在价值仍在增长。别让报价机偷走你的判断力。',
+      ],
+    },
+    dalio: {
+      name: '瑞达利欧',
+      tag: '宏观周期视角',
+      bull: [
+        '当所有人都乐观时，更要看清债务周期处在哪个位置。繁荣本身就在孕育下一轮收紧的种子。',
+        '不要被表面的强势迷惑，去检查驱动它的底层变量：信贷、生产率、政策。',
+        '我的原则是：把因果链条写下来，而不是跟着情绪走。今天上涨的"因为"站得住脚吗？',
+      ],
+      happy: [
+        '经济机器由几个简单动力驱动。今天的好转，是生产率提升还是只是流动性推动？两者持续性不同。',
+        '把你的判断变成可检验的规则，然后严格执行。感觉良好不是加仓的理由。',
+        '多样化配置的意义，正是在你最 confident 的时候提醒你：你可能是错的。',
+      ],
+      calm: [
+        '现在是运行"痛苦+反思=进步"公式的好时机。市场平静时最适合复盘你的决策框架。',
+        '大多数日子里什么都不会发生。真正的收益来自少数几次正确的大判断，以及长期的纪律。',
+        '确保你押注的情形，是你真正理解并能承受的情形。不理解就不押。',
+      ],
+      worried: [
+        '当去杠杆开始，现金流的确定性比收益率更重要。先活下来，再谈回报。',
+        '看看三个齿轮是否还在同步转动：经济增长、通胀、政策空间。任何一个卡住都值得警惕。',
+        '痛苦是不可避免的，但痛苦的程度取决于你是否有准备。今天该检查你的风险敞口了。',
+      ],
+      bear: [
+        '历史上类似的时刻，通常是长期债务周期的尾声。央行会印钞、政府会刺激，但过程往往颠簸。',
+        '不要赌单一路径。用"如果我错了怎么办"来构建你的组合，而不是"我确信会怎样"。',
+        '危机中决策困难，是因为情绪劫持了理性。把原则写下来，在你冷静时就决定好该怎么做。',
+      ],
+    },
+    xiayizhou: {
+      name: '夏以昼',
+      tag: '温柔陪伴视角',
+      bull: [
+        '今天大家都喜气洋洋的呀。开心归开心，也记得留一点清醒给自己，好不好？',
+        '涨得这么好，你一定很开心吧。我陪你高兴，也陪你把节奏放慢一点。',
+        '热闹的时候最容易忘形。别急，我看着呢，稳稳的就好。',
+      ],
+      happy: [
+        '今天的风是暖的。好消息听听就好，心里有数就够了，嗯？',
+        '小赚一笔很棒，但生活不只有行情。记得抬头看看窗外的天。',
+        '你比昨天更从容了一点，这比任何涨跌都让我高兴。',
+      ],
+      calm: [
+        '安安静静的一天。不看盘的时间也是生活，去喝杯热茶吧，我陪你。',
+        '市场没什么动静，正好 breathing room。给自己留白，不是浪费。',
+        '平稳的日子最容易被忽略，但它其实是给下一次波动攒力气呢。',
+      ],
+      worried: [
+        '跌了呀……别慌，先深呼吸。我在呢，陪你等风停。',
+        '数字跳得让人心慌，但你的价值从来不由它决定。慢慢来。',
+        '今天可以不做任何决定。把手机放下，我们看会儿云，好不好？',
+      ],
+      bear: [
+        '今天很难熬吧。没关系的，难熬的日子也会过去，我一直都在。',
+        '市场也会有做噩梦的时候。别苛责自己，先抱抱自己，嗯？',
+        '暴风雨里最要紧的是站稳。你已经做得很好了，剩下的交给时间。',
+      ],
+    },
+  };
+
+  function currentMoodKey() {
+    var c = state.mood && state.mood.cat;
+    return (c === 'bull' || c === 'happy' || c === 'calm' || c === 'worried' || c === 'bear') ? c : 'calm';
+  }
+  function updatePersona() {
+    var quotes = PERSONAS[state.persona][currentMoodKey()];
+    state.quoteIndex = state.quoteIndex % quotes.length;
+    $('persona-quote-text').textContent = quotes[state.quoteIndex];
+    $('persona-quote-author').textContent = '—— ' + PERSONAS[state.persona].name + ' · ' + PERSONAS[state.persona].tag;
+    $('persona-hint').textContent = '今日' + (state.mood ? state.mood.label : '情绪') + ' · 点一下换一句';
+  }
+  function nextQuote() {
+    state.quoteIndex = (state.quoteIndex || 0) + 1;
+    updatePersona();
   }
 
   // ---------- 行情 ----------
@@ -424,6 +535,21 @@
   // ---------- 交互 ----------
   $('refresh-btn').addEventListener('click', function () { loadData(true); });
   $('update-time').addEventListener('click', function () { loadData(true); }); // 顶部"更新于"也可点
+
+  // 人格切换
+  $('persona-chips').addEventListener('click', function (e) {
+    var chip = e.target.closest('.persona-chip'); if (!chip) return;
+    document.querySelectorAll('.persona-chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    state.persona = chip.dataset.persona;
+    state.quoteIndex = 0;
+    updatePersona();
+  });
+  // 点话语卡 / 点猫猫 都换一句
+  $('persona-quote').addEventListener('click', nextQuote);
+  $('cat-svg').addEventListener('click', nextQuote);
+  $('persona-quote').style.cursor = 'pointer';
+  $('cat-svg').style.cursor = 'pointer';
   $('chart-close').addEventListener('click', closeChart);
   $('chart-modal').addEventListener('click', function (e) { if (e.target === $('chart-modal')) closeChart(); });
   $('chart-tabs').addEventListener('click', function (e) {
@@ -470,6 +596,7 @@
   }
 
   // 启动：先渲染缓存
+  updatePersona(); // 初始填满话语框
   var cNews = safeParse(CACHE_KEY), cQuotes = safeParse(QCache_KEY);
   if (cNews || cQuotes) renderAll(cNews, cQuotes);
   loadData(false);

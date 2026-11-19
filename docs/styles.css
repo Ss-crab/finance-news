@@ -46,8 +46,8 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 
 /* ---------- Mood hero (猫猫) ---------- */
 .mood-hero { margin: 16px 14px 4px; display: flex; align-items: center; gap: 14px; background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); }
-.cat-box { flex: 0 0 96px; height: 96px; border-radius: 16px; background: linear-gradient(145deg,#fff3e0,#ffd9c0); display: flex; align-items: center; justify-content: center; }
-.cat-box svg { image-rendering: pixelated; }
+.cat-box { flex: 0 0 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: none; }
+.cat-box svg { image-rendering: pixelated; filter: drop-shadow(0 3px 6px rgba(60,40,20,.15)); }
 .mood-info { flex: 1; min-width: 0; }
 .mood-label { font-size: 11px; color: var(--text-3); }
 .mood-cat-mood { font-size: 15px; font-weight: 700; margin: 1px 0 8px; }
@@ -60,6 +60,21 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 .mood-score.pos { color: var(--up); }
 .mood-score.neg { color: var(--down); }
 .mood-score.zero { color: var(--neutral); }
+
+/* ---------- 今日人格 ---------- */
+.persona-section { margin: 12px 14px 4px; background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; padding: 13px 15px; box-shadow: var(--shadow); }
+.persona-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.persona-title { font-size: 13px; font-weight: 700; color: var(--primary); }
+.persona-hint { font-size: 10.5px; color: var(--text-3); }
+.persona-chips { display: flex; gap: 7px; margin-bottom: 11px; }
+.persona-chip { flex: 1; padding: 7px 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--solid); color: var(--text-2); font-size: 12px; cursor: pointer; transition: all .15s; }
+.persona-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+.persona-quote { position: relative; background: var(--surface-2); border-radius: 12px; padding: 12px 14px 10px 26px; min-height: 64px; cursor: pointer; transition: background .2s; }
+.persona-quote:active { background: #eef2f7; }
+.quote-mark { position: absolute; left: 9px; top: 6px; font-size: 28px; color: var(--accent); opacity: .5; line-height: 1; font-family: Georgia, serif; }
+.persona-quote p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--text); }
+.quote-author { margin-top: 7px; font-size: 11px; color: var(--text-3); text-align: right; }
+.persona-disclaimer { margin-top: 8px; font-size: 9.5px; color: var(--text-3); opacity: .8; text-align: center; }
 
 /* ---------- Section ---------- */
 .section { margin: 16px 14px; }

@@ -57,8 +57,8 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 
 /* ---------- Mood hero (猫猫) ---------- */
 .mood-hero { margin: 16px 14px 4px; display: flex; align-items: center; gap: 14px; background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); }
-.cat-box { flex: 0 0 96px; height: 96px; border-radius: 16px; background: linear-gradient(145deg,#fff3e0,#ffd9c0); display: flex; align-items: center; justify-content: center; }
-.cat-box svg { image-rendering: pixelated; }
+.cat-box { flex: 0 0 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: none; }
+.cat-box svg { image-rendering: pixelated; filter: drop-shadow(0 3px 6px rgba(60,40,20,.15)); }
 .mood-info { flex: 1; min-width: 0; }
 .mood-label { font-size: 11px; color: var(--text-3); }
 .mood-cat-mood { font-size: 15px; font-weight: 700; margin: 1px 0 8px; }
@@ -71,6 +71,21 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 .mood-score.pos { color: var(--up); }
 .mood-score.neg { color: var(--down); }
 .mood-score.zero { color: var(--neutral); }
+
+/* ---------- 今日人格 ---------- */
+.persona-section { margin: 12px 14px 4px; background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; padding: 13px 15px; box-shadow: var(--shadow); }
+.persona-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.persona-title { font-size: 13px; font-weight: 700; color: var(--primary); }
+.persona-hint { font-size: 10.5px; color: var(--text-3); }
+.persona-chips { display: flex; gap: 7px; margin-bottom: 11px; }
+.persona-chip { flex: 1; padding: 7px 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--solid); color: var(--text-2); font-size: 12px; cursor: pointer; transition: all .15s; }
+.persona-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+.persona-quote { position: relative; background: var(--surface-2); border-radius: 12px; padding: 12px 14px 10px 26px; min-height: 64px; cursor: pointer; transition: background .2s; }
+.persona-quote:active { background: #eef2f7; }
+.quote-mark { position: absolute; left: 9px; top: 6px; font-size: 28px; color: var(--accent); opacity: .5; line-height: 1; font-family: Georgia, serif; }
+.persona-quote p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--text); }
+.quote-author { margin-top: 7px; font-size: 11px; color: var(--text-3); text-align: right; }
+.persona-disclaimer { margin-top: 8px; font-size: 9.5px; color: var(--text-3); opacity: .8; text-align: center; }
 
 /* ---------- Section ---------- */
 .section { margin: 16px 14px; }
@@ -226,6 +241,25 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
       <div class="mood-score" id="mood-score">--</div>
     </section>
 
+    <!-- 今日人格：点猫猫或选人格切换话语 -->
+    <section class="persona-section" id="persona-section">
+      <div class="persona-head">
+        <span class="persona-title">今日人格 · 点猫猫换一句</span>
+        <span class="persona-hint" id="persona-hint">选一个视角看今天</span>
+      </div>
+      <div class="persona-chips" id="persona-chips">
+        <button class="persona-chip active" data-persona="buffett">巴菲特</button>
+        <button class="persona-chip" data-persona="dalio">瑞达利欧</button>
+        <button class="persona-chip" data-persona="xiayizhou">夏以昼</button>
+      </div>
+      <div class="persona-quote" id="persona-quote">
+        <div class="quote-mark">"</div>
+        <p id="persona-quote-text">选择人格后，根据今日多空情绪生成一句话…</p>
+        <div class="quote-author" id="persona-quote-author"></div>
+      </div>
+      <div class="persona-disclaimer">人格话语为风格化模拟，非本人真实观点，仅供阅读趣味。</div>
+    </section>
+
     <!-- 行情速览 -->
     <section class="section" id="quotes-section">
       <div class="section-head">
@@ -298,18 +332,35 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 
   <script>window.__OFFLINE_NEWS__={
   "mood": {
-    "score": 27,
-    "cat": "happy",
-    "catMood": "猫猫开心 😸",
-    "label": "偏多",
+    "score": 0,
+    "cat": "calm",
+    "catMood": "猫猫淡定 😌",
+    "label": "中性震荡",
     "breakdown": {
-      "news": 33,
-      "market": 19
+      "news": 3,
+      "market": -4,
+      "newsConfidence": 100,
+      "sentimentCount": 18,
+      "layers": {
+        "aShare": -18,
+        "usStock": 19,
+        "commodity": -39,
+        "fx": 3
+      },
+      "weights": {
+        "news": 50,
+        "market": 50,
+        "aShare": 20,
+        "usStock": 20,
+        "commodity": 6,
+        "fx": 4
+      }
     },
-    "scale": "-100 极空 / 0 中性 / +100 极多"
+    "scale": "-100 极空 / ≤-50 偏空 / -18~18 中性 / ≥18 偏多 / ≥50 极多",
+    "rules": "新闻面50%(按重要性加权+小样本折算) + 行情面50%(A股20/美股20/商品6/汇率4, ±3%封顶)"
   },
   "meta": {
-    "generatedAt": "2026-11-19T11:59:08.609161Z",
+    "generatedAt": "2026-11-19T13:13:35.564888Z",
     "windowStart": "2026-11-18T11:01:14.674754Z",
     "windowEnd": "2026-11-19T11:01:14.674754Z",
     "windowHours": 24,
@@ -344,12 +395,12 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
   "topPicks": [
     "645722308cb554df",
     "fe02fcb4c005dfb4",
-    "7c4e05cef5639542",
-    "d520a4cd73b2e2d3",
     "074d5a81575129d4",
     "c31aeab2204c73f1",
     "d1e01830a20ee294",
-    "25f4d23fc0c1a730"
+    "25f4d23fc0c1a730",
+    "bfd4cd28270f3a15",
+    "f861cb336573eb7b"
   ],
   "items": [
     {
@@ -383,38 +434,6 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
       ],
       "subtopic": "货币政策",
       "tradingView": "该消息对利率相关领域情绪偏谨慎，需关注其对A股相关板块的开盘情绪与资金关注度的后续影响。本解读为客观信息归纳，不构成投资建议。",
-      "importance": 3
-    },
-    {
-      "id": "7c4e05cef5639542",
-      "market": "美股宏观",
-      "title": "The real beneficiary of the AI tech revolution fueled by Anthropic may surprise you",
-      "summary": "India has a huge tech-savvy population and its relative backwardness in many sectors of the economy like health care, education and agricult…",
-      "source": "MarketWatch",
-      "sourceUrl": "https://www.marketwatch.com/story/the-real-beneficiary-of-the-ai-tech-revolution-fueled-by-anthropic-may-surprise-you-6fa098b2?mod=mw_rss_topstories",
-      "publishedAt": "2026-11-19T10:04:00Z",
-      "sentiment": "neutral",
-      "impactTags": [
-        "地缘风险"
-      ],
-      "subtopic": "地缘政治",
-      "tradingView": "该消息对地缘风险相关领域情绪方向待观察，需关注其对美股与全球风险资产的短期波动的后续影响。本解读为客观信息归纳，不构成投资建议。",
-      "importance": 3
-    },
-    {
-      "id": "d520a4cd73b2e2d3",
-      "market": "美股宏观",
-      "title": "Trump praises ‘great relationship’ with Putin after meeting, as Ukraine war takes center stage",
-      "summary": "U.S. President Donald Trump met individually on Thursday with Russian President Vladimir Putin, as well as Chinese President Xi Jinping.",
-      "source": "CNBC",
-      "sourceUrl": "https://www.cnbc.com/2026/11/19/trump-xi-putin-china-apec-.html",
-      "publishedAt": "2026-11-19T09:02:00Z",
-      "sentiment": "negative",
-      "impactTags": [
-        "地缘风险"
-      ],
-      "subtopic": "地缘政治",
-      "tradingView": "该消息对地缘风险相关领域情绪偏谨慎，需关注其对美股与全球风险资产的短期波动的后续影响。本解读为客观信息归纳，不构成投资建议。",
       "importance": 3
     },
     {
@@ -2040,6 +2059,22 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
       "importance": 2
     },
     {
+      "id": "7c4e05cef5639542",
+      "market": "美股宏观",
+      "title": "The real beneficiary of the AI tech revolution fueled by Anthropic may surprise you",
+      "summary": "India has a huge tech-savvy population and its relative backwardness in many sectors of the economy like health care, education and agricult…",
+      "source": "MarketWatch",
+      "sourceUrl": "https://www.marketwatch.com/story/the-real-beneficiary-of-the-ai-tech-revolution-fueled-by-anthropic-may-surprise-you-6fa098b2?mod=mw_rss_topstories",
+      "publishedAt": "2026-11-19T10:04:00Z",
+      "sentiment": "neutral",
+      "impactTags": [
+        "地缘风险"
+      ],
+      "subtopic": "地缘政治",
+      "tradingView": "该消息对地缘风险相关领域情绪方向待观察，需关注其对美股与全球风险资产的短期波动的后续影响。本解读为客观信息归纳，不构成投资建议。",
+      "importance": 2
+    },
+    {
       "id": "21ca5fb2f8892560",
       "market": "美股宏观",
       "title": "Former Fox News anchor Maria Bartiromo sells $7 million N.Y.C. townhouse",
@@ -2069,6 +2104,22 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
       ],
       "subtopic": "综合",
       "tradingView": "该消息对市场动态相关领域情绪方向待观察，需关注其对美股与全球风险资产的短期波动的后续影响。本解读为客观信息归纳，不构成投资建议。",
+      "importance": 2
+    },
+    {
+      "id": "d520a4cd73b2e2d3",
+      "market": "美股宏观",
+      "title": "Trump praises ‘great relationship’ with Putin after meeting, as Ukraine war takes center stage",
+      "summary": "U.S. President Donald Trump met individually on Thursday with Russian President Vladimir Putin, as well as Chinese President Xi Jinping.",
+      "source": "CNBC",
+      "sourceUrl": "https://www.cnbc.com/2026/11/19/trump-xi-putin-china-apec-.html",
+      "publishedAt": "2026-11-19T09:02:00Z",
+      "sentiment": "negative",
+      "impactTags": [
+        "地缘风险"
+      ],
+      "subtopic": "地缘政治",
+      "tradingView": "该消息对地缘风险相关领域情绪偏谨慎，需关注其对美股与全球风险资产的短期波动的后续影响。本解读为客观信息归纳，不构成投资建议。",
       "importance": 2
     },
     {
@@ -3245,7 +3296,7 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
   var QUOTES_URL = 'quotes.json';
   var CACHE_KEY = 'overnight_news_cache_v2';
   var QCache_KEY = 'overnight_quotes_cache_v2';
-  var state = { data: null, quotes: null, market: 'all', minImportance: 1, subtopic: 'all', chart: null, chartRange: 14 };
+  var state = { data: null, quotes: null, mood: null, persona: 'buffett', quoteIndex: 0, market: 'all', minImportance: 1, subtopic: 'all', chart: null, chartRange: 14 };
 
   var MARKET_LABELS = { '中国快讯': 'A股' };
   var $ = function (id) { return document.getElementById(id); };
@@ -3407,6 +3458,7 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 
   function renderMood(mood) {
     if (!mood) return;
+    state.mood = mood;
     $('mood-label').textContent = '市场多空程度';
     $('mood-cat-mood').textContent = mood.catMood + ' · ' + mood.label;
     var s = mood.score || 0;
@@ -3416,6 +3468,116 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
     scoreEl.textContent = (s > 0 ? '+' : '') + s;
     scoreEl.className = 'mood-score ' + (s > 20 ? 'pos' : s < -20 ? 'neg' : 'zero');
     renderCat(mood.cat);
+    updatePersona(); // 心情变了，话语也跟着更新
+  }
+
+  // ---------- 今日人格话语 ----------
+  // 三种人格 × 五种心情，每人每心情 3-4 句，涵盖指引/见解/历史类比/安慰。
+  // 内容为风格化模拟，非本人真实观点。
+  var PERSONAS = {
+    buffett: {
+      name: '巴菲特',
+      tag: '价值投资视角',
+      bull: [
+        '别人贪婪时我谨慎。今天的好消息很热闹，但请记住：价格是你付出的，价值是你得到的。',
+        '市场先生今天情绪高涨，愿意为你服务——但别让他替你做决定。',
+        '我从不预测市场明天涨跌，我只问：这家公司十年后还在吗？',
+      ],
+      happy: [
+        '一点好消息值得高兴，但真正的回报来自耐心，而不是频繁按键。',
+        '如果你不愿意持有十年，就别持有十分钟。今天的上涨不是卖出的理由，也不是买入的理由。',
+        '风险来自你不知道自己在做什么。先弄清手里是什么，再谈涨跌。',
+      ],
+      calm: [
+        '什么都没发生的时候，是最好的思考时间。市场先生今天没什么话要说，那就听听他沉默里的机会。',
+        '我们最喜欢的持有期是永远。今天这种平淡日子，正是长期投资者的朋友。',
+        '不要为每一次波动找理由。有时市场就是随机漫步，你需要的是纪律，不是故事。',
+      ],
+      worried: [
+        '下跌给了有准备的人机会——前提是手里有现金，也有一张想买的公司清单。',
+        '股价下跌并不意味着公司变差，往往只是别人情绪变了。别忘了两者区别。',
+        '我只会在水温合适时下水。今天可以是观望日，观望也是一种仓位。',
+      ],
+      bear: [
+        '别人恐惧时我贪婪——但请先确认你恐惧的是价格，还是价值真的变了。',
+        '1929、1987、2008，每一次暴跌后都有人绝望，也都有人买入了好公司。历史不会简单重复，但押韵。',
+        '最坏的时候，优秀企业的内在价值仍在增长。别让报价机偷走你的判断力。',
+      ],
+    },
+    dalio: {
+      name: '瑞达利欧',
+      tag: '宏观周期视角',
+      bull: [
+        '当所有人都乐观时，更要看清债务周期处在哪个位置。繁荣本身就在孕育下一轮收紧的种子。',
+        '不要被表面的强势迷惑，去检查驱动它的底层变量：信贷、生产率、政策。',
+        '我的原则是：把因果链条写下来，而不是跟着情绪走。今天上涨的"因为"站得住脚吗？',
+      ],
+      happy: [
+        '经济机器由几个简单动力驱动。今天的好转，是生产率提升还是只是流动性推动？两者持续性不同。',
+        '把你的判断变成可检验的规则，然后严格执行。感觉良好不是加仓的理由。',
+        '多样化配置的意义，正是在你最 confident 的时候提醒你：你可能是错的。',
+      ],
+      calm: [
+        '现在是运行"痛苦+反思=进步"公式的好时机。市场平静时最适合复盘你的决策框架。',
+        '大多数日子里什么都不会发生。真正的收益来自少数几次正确的大判断，以及长期的纪律。',
+        '确保你押注的情形，是你真正理解并能承受的情形。不理解就不押。',
+      ],
+      worried: [
+        '当去杠杆开始，现金流的确定性比收益率更重要。先活下来，再谈回报。',
+        '看看三个齿轮是否还在同步转动：经济增长、通胀、政策空间。任何一个卡住都值得警惕。',
+        '痛苦是不可避免的，但痛苦的程度取决于你是否有准备。今天该检查你的风险敞口了。',
+      ],
+      bear: [
+        '历史上类似的时刻，通常是长期债务周期的尾声。央行会印钞、政府会刺激，但过程往往颠簸。',
+        '不要赌单一路径。用"如果我错了怎么办"来构建你的组合，而不是"我确信会怎样"。',
+        '危机中决策困难，是因为情绪劫持了理性。把原则写下来，在你冷静时就决定好该怎么做。',
+      ],
+    },
+    xiayizhou: {
+      name: '夏以昼',
+      tag: '温柔陪伴视角',
+      bull: [
+        '今天大家都喜气洋洋的呀。开心归开心，也记得留一点清醒给自己，好不好？',
+        '涨得这么好，你一定很开心吧。我陪你高兴，也陪你把节奏放慢一点。',
+        '热闹的时候最容易忘形。别急，我看着呢，稳稳的就好。',
+      ],
+      happy: [
+        '今天的风是暖的。好消息听听就好，心里有数就够了，嗯？',
+        '小赚一笔很棒，但生活不只有行情。记得抬头看看窗外的天。',
+        '你比昨天更从容了一点，这比任何涨跌都让我高兴。',
+      ],
+      calm: [
+        '安安静静的一天。不看盘的时间也是生活，去喝杯热茶吧，我陪你。',
+        '市场没什么动静，正好 breathing room。给自己留白，不是浪费。',
+        '平稳的日子最容易被忽略，但它其实是给下一次波动攒力气呢。',
+      ],
+      worried: [
+        '跌了呀……别慌，先深呼吸。我在呢，陪你等风停。',
+        '数字跳得让人心慌，但你的价值从来不由它决定。慢慢来。',
+        '今天可以不做任何决定。把手机放下，我们看会儿云，好不好？',
+      ],
+      bear: [
+        '今天很难熬吧。没关系的，难熬的日子也会过去，我一直都在。',
+        '市场也会有做噩梦的时候。别苛责自己，先抱抱自己，嗯？',
+        '暴风雨里最要紧的是站稳。你已经做得很好了，剩下的交给时间。',
+      ],
+    },
+  };
+
+  function currentMoodKey() {
+    var c = state.mood && state.mood.cat;
+    return (c === 'bull' || c === 'happy' || c === 'calm' || c === 'worried' || c === 'bear') ? c : 'calm';
+  }
+  function updatePersona() {
+    var quotes = PERSONAS[state.persona][currentMoodKey()];
+    state.quoteIndex = state.quoteIndex % quotes.length;
+    $('persona-quote-text').textContent = quotes[state.quoteIndex];
+    $('persona-quote-author').textContent = '—— ' + PERSONAS[state.persona].name + ' · ' + PERSONAS[state.persona].tag;
+    $('persona-hint').textContent = '今日' + (state.mood ? state.mood.label : '情绪') + ' · 点一下换一句';
+  }
+  function nextQuote() {
+    state.quoteIndex = (state.quoteIndex || 0) + 1;
+    updatePersona();
   }
 
   // ---------- 行情 ----------
@@ -3660,6 +3822,21 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
   // ---------- 交互 ----------
   $('refresh-btn').addEventListener('click', function () { loadData(true); });
   $('update-time').addEventListener('click', function () { loadData(true); }); // 顶部"更新于"也可点
+
+  // 人格切换
+  $('persona-chips').addEventListener('click', function (e) {
+    var chip = e.target.closest('.persona-chip'); if (!chip) return;
+    document.querySelectorAll('.persona-chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    state.persona = chip.dataset.persona;
+    state.quoteIndex = 0;
+    updatePersona();
+  });
+  // 点话语卡 / 点猫猫 都换一句
+  $('persona-quote').addEventListener('click', nextQuote);
+  $('cat-svg').addEventListener('click', nextQuote);
+  $('persona-quote').style.cursor = 'pointer';
+  $('cat-svg').style.cursor = 'pointer';
   $('chart-close').addEventListener('click', closeChart);
   $('chart-modal').addEventListener('click', function (e) { if (e.target === $('chart-modal')) closeChart(); });
   $('chart-tabs').addEventListener('click', function (e) {
@@ -3706,6 +3883,7 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
   }
 
   // 启动：先渲染缓存
+  updatePersona(); // 初始填满话语框
   var cNews = safeParse(CACHE_KEY), cQuotes = safeParse(QCache_KEY);
   if (cNews || cQuotes) renderAll(cNews, cQuotes);
   loadData(false);

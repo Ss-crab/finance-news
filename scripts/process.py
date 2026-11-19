@@ -239,49 +239,115 @@ def get_subtopic(item):
 
 
 def compute_mood(items, quotes_path):
-    """综合新闻情绪与行情涨跌，计算多空程度指数(-100空 ~ +100多)与猫猫心情。
+    """严谨的多空评分。
 
-    得分构成：新闻情绪占比 60%，风险资产(股指)涨跌占比 40%。
-    返回 (score, cat_key, cat_mood, label, breakdown)
+    总分 = 新闻面 50% + 行情面 50%，各子项先归一到 -1..+1 再加权。
+
+    新闻面（50%）：按重要性加权，高影响(importance≥4)权重 2.0，中(3)1.0，低(≤2)0.5。
+      sentiment: positive=+1 / negative=-1 / neutral=0。
+      新闻分 = Σ(权重×情绪) / Σ(权重×所有条数权重)  → -1..+1
+      样本不足(<3条有情绪)时按 0.5 置信度折算，避免小样本极端化。
+
+    行情面（50%），分层权重：
+      A股指数(上证/创业板) 40% of 行情面
+      美股指数(标普/纳指/道指) 40%
+      商品(黄金/白银/CRB) 12%
+      汇率(美元指数) 8%（美元走强通常对风险资产偏空，故取反）
+      每个品种涨跌映射：±3%封顶 → -1..+1；缺失层级按其它层均值补齐并降低该层权重。
+
+    分级阈值（对称）：
+      ≥ +50 极多 / +18~+50 偏多 / -18~+18 中性 / -50~-18 偏空 / ≤ -50 极空
+
+    返回 (score, cat, mood, label, breakdown)
     """
-    # 新闻情绪分：-1 ~ +1
-    pos = sum(1 for it in items if it.get("sentiment") == "positive")
-    neg = sum(1 for it in items if it.get("sentiment") == "negative")
-    total = max(pos + neg, 1)
-    news_score = (pos - neg) / total  # -1 ~ +1
+    # ---------- 新闻面 ----------
+    sent_val = {"positive": 1.0, "negative": -1.0, "neutral": 0.0}
+    weighted_sum = 0.0
+    weight_total = 0.0
+    sentiment_count = 0
+    for it in items:
+        imp = it.get("importance", 3) or 3
+        w = 2.0 if imp >= 4 else (1.0 if imp == 3 else 0.5)
+        s = sent_val.get(it.get("sentiment"), 0.0)
+        weighted_sum += w * s
+        weight_total += w
+        if s != 0:
+            sentiment_count += 1
+    news_score = (weighted_sum / weight_total) if weight_total else 0.0
+    # 小样本置信度折算
+    conf = min(1.0, sentiment_count / 5.0) if sentiment_count else 0.0
+    news_score *= conf
 
-    # 行情分：股指涨跌均值，映射到 -1 ~ +1（±3% 封顶）
-    market_score = 0.0
-    market_n = 0
+    # ---------- 行情面（分层加权）----------
+    quotes = []
     try:
         with open(quotes_path, "r", encoding="utf-8") as fh:
-            qdata = json.load(fh)
-        for q in qdata.get("quotes", []):
-            if q.get("kind") == "index" and q.get("changePct") is not None:
-                market_score += max(-3, min(3, q["changePct"])) / 3.0
-                market_n += 1
+            quotes = json.load(fh).get("quotes", [])
     except Exception:
         pass
-    if market_n:
-        market_score /= market_n
 
-    raw = 0.6 * news_score + 0.4 * market_score  # -1 ~ +1
-    score = int(round(raw * 100))  # -100 ~ +100
-    score = max(-100, min(100, score))
+    def layer_score(keys):
+        vals, ws = [], []
+        for q in quotes:
+            if q.get("key") in keys and q.get("changePct") is not None:
+                v = max(-3.0, min(3.0, float(q["changePct"]))) / 3.0
+                vals.append(v)
+                ws.append(1.0)
+        if not vals:
+            return None, 0
+        return sum(v * w for v, w in zip(vals, ws)) / sum(ws), len(vals)
 
-    # 猫猫心情映射
-    if score >= 60:
+    a_score, a_n = layer_score(["shcomposite", "chinext"])               # A股
+    us_score, us_n = layer_score(["sp500", "nasdaq", "dji"])            # 美股
+    cm_score, cm_n = layer_score(["gold", "silver", "crb"])             # 商品
+    fx_score, fx_n = layer_score(["dxy"])                               # 美元指数
+
+    # 美元指数取反：美元强 → 风险资产偏空
+    if fx_score is not None:
+        fx_score = -fx_score
+
+    # 分层权重，缺失层按可用层均值补齐
+    layer_w = {"a": 0.40, "us": 0.40, "cm": 0.12, "fx": 0.08}
+    layers = {"a": (a_score, a_n), "us": (us_score, us_n),
+              "cm": (cm_score, cm_n), "fx": (fx_score, fx_n)}
+    available = {k: v for k, v in layers.items() if v[0] is not None}
+    if available:
+        # 权重归一：可用层按原权重占比放大；缺失层忽略
+        wsum = sum(layer_w[k] for k in available)
+        market_score = sum(layer_w[k] * available[k][0] for k in available) / wsum
+    else:
+        market_score = 0.0
+
+    # ---------- 合成 ----------
+    raw = 0.5 * news_score + 0.5 * market_score
+    score = int(round(max(-1.0, min(1.0, raw)) * 100))
+
+    # ---------- 分级 ----------
+    if score >= 50:
         cat, mood, label = "bull", "猫猫起飞 🚀", "强烈偏多"
-    elif score >= 25:
+    elif score >= 18:
         cat, mood, label = "happy", "猫猫开心 😸", "偏多"
-    elif score > -25:
+    elif score > -18:
         cat, mood, label = "calm", "猫猫淡定 😌", "中性震荡"
-    elif score > -60:
+    elif score > -50:
         cat, mood, label = "worried", "猫猫担忧 😟", "偏空"
     else:
         cat, mood, label = "bear", "猫猫抱头 🙀", "强烈偏空"
 
-    breakdown = {"news": round(news_score * 100), "market": round(market_score * 100)}
+    breakdown = {
+        "news": round(news_score * 100),
+        "market": round(market_score * 100),
+        "newsConfidence": round(conf * 100),
+        "sentimentCount": sentiment_count,
+        "layers": {
+            "aShare": round(a_score * 100) if a_score is not None else None,
+            "usStock": round(us_score * 100) if us_score is not None else None,
+            "commodity": round(cm_score * 100) if cm_score is not None else None,
+            "fx": round(fx_score * 100) if fx_score is not None else None,
+        },
+        "weights": {"news": 50, "market": 50,
+                    "aShare": 20, "usStock": 20, "commodity": 6, "fx": 4},
+    }
     return score, cat, mood, label, breakdown
 
 
@@ -350,7 +416,8 @@ def main():
             "catMood": cat_mood,
             "label": mood_label,
             "breakdown": breakdown,
-            "scale": "-100 极空 / 0 中性 / +100 极多",
+            "scale": "-100 极空 / ≤-50 偏空 / -18~18 中性 / ≥18 偏多 / ≥50 极多",
+            "rules": "新闻面50%(按重要性加权+小样本折算) + 行情面50%(A股20/美股20/商品6/汇率4, ±3%封顶)",
         },
         "meta": {
             "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
