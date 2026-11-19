@@ -1,5 +1,5 @@
 /* Service Worker：缓存 App Shell，网络优先更新 news.json，离线回退缓存。 */
-var CACHE = 'overnight-finance-v2';
+var CACHE = 'overnight-finance-v3';
 var SHELL = [
   './',
   './index.html',

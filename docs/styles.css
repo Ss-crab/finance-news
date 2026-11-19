@@ -32,7 +32,10 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 .app-header { position: sticky; top: 0; z-index: 20; padding: calc(14px + env(safe-area-inset-top)) 18px 12px; color: #fff; background: rgba(20, 38, 66, .55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .header-main { display: flex; align-items: center; justify-content: space-between; }
 .app-title { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: .5px; }
-.app-subtitle { margin: 2px 0 0; font-size: 11.5px; color: rgba(255,255,255,.75); }
+.app-subtitle { margin: 2px 0 0; font-size: 11.5px; color: rgba(255,255,255,.85); cursor: pointer; display: inline-block; transition: color .2s; }
+.app-subtitle:active { color: #fff; }
+.app-subtitle.flash { animation: flashTxt .8s ease; }
+@keyframes flashTxt { 0%,100% { color: rgba(255,255,255,.85); } 30% { color: #ffe08a; text-shadow: 0 0 8px rgba(255,224,138,.8); } }
 .icon-btn { background: rgba(255,255,255,.15); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s; }
 .icon-btn:active { background: rgba(255,255,255,.3); }
 .icon-btn.spinning svg { animation: spin .8s linear infinite; }
@@ -43,7 +46,8 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 
 /* ---------- Mood hero (猫猫) ---------- */
 .mood-hero { margin: 16px 14px 4px; display: flex; align-items: center; gap: 14px; background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); }
-.cat-box { flex: 0 0 92px; height: 92px; border-radius: 16px; background: linear-gradient(145deg,#fff6da,#ffe6a8); display: flex; align-items: center; justify-content: center; }
+.cat-box { flex: 0 0 96px; height: 96px; border-radius: 16px; background: linear-gradient(145deg,#fff3e0,#ffd9c0); display: flex; align-items: center; justify-content: center; }
+.cat-box svg { image-rendering: pixelated; }
 .mood-info { flex: 1; min-width: 0; }
 .mood-label { font-size: 11px; color: var(--text-3); }
 .mood-cat-mood { font-size: 15px; font-weight: 700; margin: 1px 0 8px; }
@@ -146,11 +150,14 @@ body { min-height: 100vh; background: var(--bg); padding-bottom: calc(60px + env
 #chart-canvas { width: 100%; height: 100%; }
 .chart-note { font-size: 11px; color: var(--text-3); margin-top: 6px; min-height: 16px; }
 
-/* ---------- Disclaimer ---------- */
-.disclaimer { margin: 22px 14px 10px; padding: 15px; background: rgba(238,241,245,.85); border-radius: 12px; font-size: 11px; color: var(--text-2); line-height: 1.6; }
-.disclaimer strong { color: var(--text); font-size: 12px; }
-.disclaimer p { margin: 5px 0 0; }
-.foot-note { color: var(--text-3) !important; font-size: 10px !important; }
+/* ---------- 极简页脚 ---------- */
+.foot-min { margin: 18px 14px 6px; text-align: center; font-size: 10px; color: var(--text-3); opacity: .75; }
+
+/* ---------- Toast ---------- */
+.toast { position: fixed; left: 50%; top: 76px; transform: translate(-50%, -12px); z-index: 80;
+  background: rgba(30,42,66,.92); color: #fff; font-size: 12.5px; padding: 9px 18px; border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.18); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ---------- Pull ---------- */
 .pull-indicator { position: fixed; top: -50px; left: 0; right: 0; text-align: center; font-size: 12px; color: #fff; background: var(--primary); padding: 10px; transition: top .2s; z-index: 60; }

@@ -42,22 +42,22 @@
     var h = new Date().getHours() + new Date().getMinutes() / 60;
     var sky = $('sky-bg'), sun = $('sky-sun'), stars = $('sky-stars'), horizon = document.querySelector('.sky-horizon');
     var top, bottom, horizonColor, sunColor, sunTop, starOpacity;
-    if (h >= 6 && h < 9) {          // 黎明
+    // 统一走明亮温暖的「黄昏感」色调，整体提亮，弱化黑夜的沉闷
+    if (h >= 6 && h < 9) {          // 黎明：暖粉金
       var t = (h - 6) / 3;
-      top = mix([58, 74, 122], [126, 168, 214], t);
-      bottom = mix([247, 196, 150], [244, 224, 196], t);
-      horizonColor = 'rgba(255,190,120,.55)'; sunColor = '#ffd28a'; sunTop = 150 - t * 40; starOpacity = 0.25 * (1 - t);
-    } else if (h >= 9 && h < 16) {   // 白天
-      top = '#7fb0e0'; bottom = '#eaf3fb'; horizonColor = 'rgba(255,255,255,.4)'; sunColor = '#fff3c4'; sunTop = 42; starOpacity = 0;
-    } else if (h >= 16 && h < 19) {  // 黄昏
+      top = mix([176, 168, 214], [150, 196, 232], t);
+      bottom = mix([255, 210, 180], [255, 226, 200], t);
+      horizonColor = 'rgba(255,190,150,.6)'; sunColor = '#ffe0a8'; sunTop = 140 - t * 50; starOpacity = 0.12 * (1 - t);
+    } else if (h >= 9 && h < 16) {   // 白天：明亮暖蓝
+      top = '#a8cdee'; bottom = '#f3f7fb'; horizonColor = 'rgba(255,235,210,.45)'; sunColor = '#fff6d8'; sunTop = 40; starOpacity = 0;
+    } else if (h >= 16 && h < 19) {  // 黄昏：明亮橙粉紫（主基调）
       var t2 = (h - 16) / 3;
-      top = mix([104, 138, 186], [52, 60, 110], t2);
-      bottom = mix([250, 200, 150], [214, 138, 120], t2);
-      horizonColor = 'rgba(255,140,90,.55)'; sunColor = '#ff9d6b'; sunTop = 90 + t2 * 70; starOpacity = t2 * 0.3;
-    } else {                          // 夜晚
-      top = '#1a2b4a'; bottom = '#3b4a6b'; horizonColor = 'rgba(90,110,160,.35)'; sunColor = '#e8eef8'; sunTop = 200; starOpacity = 0.75;
-      // 夜晚不显示太阳（当作月亮也行，这里隐藏）
-      sun.style.opacity = '0.25';
+      top = mix([168, 150, 210], [196, 138, 186], t2);
+      bottom = mix([255, 214, 170], [255, 186, 168], t2);
+      horizonColor = 'rgba(255,150,110,.6)'; sunColor = '#ffb27a'; sunTop = 80 + t2 * 55; starOpacity = t2 * 0.18;
+    } else {                          // 夜晚：柔和蓝紫，仍保留微光但不压抑
+      top = '#5b6a97'; bottom = '#98a4c4'; horizonColor = 'rgba(150,165,205,.4)'; sunColor = '#f4f0e0'; sunTop = 170; starOpacity = 0.5;
+      sun.style.opacity = '0.45';
     }
     if (h >= 6 && h < 19) sun.style.opacity = '1';
     var grad = 'linear-gradient(to bottom, ' + (typeof top === 'string' ? top : rgb(top)) + ', ' + (typeof bottom === 'string' ? bottom : rgb(bottom)) + ')';
@@ -71,37 +71,74 @@
   function mix(a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); }
   function rgb(a) { return 'rgb(' + a[0] + ',' + a[1] + ',' + a[2] + ')'; }
 
-  // ---------- 猫猫 SVG ----------
+  // ---------- 像素猫猫 SVG ----------
+  // 用像素方块网格绘制猫头，心情不同则表情与装饰不同
   function renderCat(cat) {
-    var eyes, mouth, extra = '';
-    var face = '#FFD95E', line = '#8a6d1f', blush = 'rgba(230,120,120,.4)';
-    if (cat === 'bull') {           // 起飞：星星眼 + 大笑
-      eyes = '<path d="M38 52 l4 -7 4 7 -4 7z" fill="#fff" stroke="' + line + '"/><path d="M74 52 l4 -7 4 7 -4 7z" fill="#fff" stroke="' + line + '"/>';
-      mouth = '<path d="M50 70 q10 12 20 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-      extra = '<text x="98" y="30" font-size="16">✦</text><text x="18" y="40" font-size="12">✦</text>';
-    } else if (cat === 'happy') {   // 开心：眯眼笑
-      eyes = '<path d="M36 52 q6 -8 12 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/><path d="M72 52 q6 -8 12 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-      mouth = '<path d="M52 68 q8 9 16 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-    } else if (cat === 'worried') { // 担忧：耷拉眼 + 波浪嘴
-      eyes = '<path d="M36 52 q6 6 12 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/><path d="M72 52 q6 6 12 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-      mouth = '<path d="M53 72 q7 -6 14 0" fill="none" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-    } else if (cat === 'bear') {    // 抱头：X眼 + 大开口 + 汗
-      eyes = '<path d="M36 48 l12 10 M48 48 l-12 10 M72 48 l12 10 M84 48 l-12 10" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
-      mouth = '<ellipse cx="60" cy="74" rx="8" ry="7" fill="#7a4a3a"/>';
-      extra = '<path d="M92 44 q4 6 0 10 q-4 -4 0 -10z" fill="#9ec8f0"/>';
-    } else {                        // calm 淡定
-      eyes = '<circle cx="42" cy="52" r="3" fill="' + line + '"/><circle cx="78" cy="52" r="3" fill="' + line + '"/>';
-      mouth = '<path d="M54 68 h12" stroke="' + line + '" stroke-width="2.5" stroke-linecap="round"/>';
+    var face = '#F7B733', faceDark = '#E89A20', outline = '#5A3A12', pink = '#FF8C94', ink = '#3A2A12';
+    var px = function (x, y, w, h, fill) {
+      return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + fill + '"/>';
+    };
+
+    // 基础猫头（像素块，单位 px，画布 120x120）
+    var base =
+      // 耳朵
+      px(20, 18, 10, 10, outline) + px(30, 28, 50, 6, outline) +
+      px(22, 20, 6, 6, face) + px(88, 18, 10, 10, outline) + px(88, 20, 6, 6, face) +
+      // 头部主体（轮廓 + 脸）
+      px(28, 30, 62, 8, outline) +
+      px(24, 38, 70, 44, outline) +
+      px(28, 42, 62, 36, face) +
+      // 脸颊阴影
+      px(28, 70, 62, 8, faceDark) +
+      // 内耳
+      px(34, 40, 10, 10, pink) + px(74, 40, 10, 10, pink);
+
+    var eyes = '', mouth = '', decor = '';
+    if (cat === 'bull') {           // 极多：星星眼 + 大笑 + 爱心
+      eyes = px(40, 52, 8, 8, '#FFF') + px(42, 54, 4, 4, '#FFD400') +
+             px(70, 52, 8, 8, '#FFF') + px(72, 54, 4, 4, '#FFD400');
+      mouth = px(52, 66, 14, 6, ink) + px(56, 72, 6, 4, '#E8536B');
+      // 爱心装饰（右上）
+      decor = heart(100, 20, '#FF4D6D') + heart(16, 44, '#FF7A99');
+    } else if (cat === 'happy') {   // 偏多：弯眼笑 + 小爱心
+      eyes = px(38, 54, 12, 4, ink) + px(36, 52, 4, 4, ink) + px(48, 52, 4, 4, ink) +
+             px(68, 54, 12, 4, ink) + px(66, 52, 4, 4, ink) + px(78, 52, 4, 4, ink);
+      mouth = px(54, 66, 10, 4, ink) + px(52, 64, 4, 4, ink) + px(62, 64, 4, 4, ink);
+      decor = heart(100, 26, '#FF6B8A');
+    } else if (cat === 'worried') { // 偏空：耷拉眼 + 波浪嘴 + 汗滴
+      eyes = px(38, 56, 12, 4, ink) + px(38, 52, 4, 4, ink) + px(46, 52, 4, 4, ink) +
+             px(68, 56, 12, 4, ink) + px(68, 52, 4, 4, ink) + px(76, 52, 4, 4, ink);
+      mouth = px(52, 68, 6, 3, ink) + px(58, 66, 6, 3, ink) + px(64, 68, 6, 3, ink);
+      decor = px(96, 40, 5, 9, '#7EC8E3') + px(95, 49, 7, 3, '#7EC8E3'); // 汗滴
+    } else if (cat === 'bear') {    // 极空：X眼 + 大开口 + 毒药
+      eyes = px(38, 50, 4, 4, ink) + px(42, 54, 4, 4, ink) + px(46, 58, 4, 4, ink) + px(42, 62, 4, 4, ink) + px(38, 58, 4, 4, ink) +
+             px(68, 50, 4, 4, ink) + px(72, 54, 4, 4, ink) + px(76, 58, 4, 4, ink) + px(72, 62, 4, 4, ink) + px(68, 58, 4, 4, ink);
+      mouth = px(52, 66, 14, 10, '#5A3A12') + px(54, 68, 10, 6, '#2A1A0A');
+      decor = poison(98, 26);       // 毒药瓶
+    } else {                        // calm 淡定：圆眼 + 一字嘴
+      eyes = px(40, 54, 6, 6, ink) + px(72, 54, 6, 6, ink);
+      mouth = px(54, 68, 10, 3, ink);
     }
-    $('cat-svg').innerHTML =
-      '<path d="M28 44 L24 18 L46 32 Z" fill="' + face + '" stroke="' + line + '" stroke-width="2"/>' +
-      '<path d="M92 44 L96 18 L74 32 Z" fill="' + face + '" stroke="' + line + '" stroke-width="2"/>' +
-      '<circle cx="60" cy="60" r="38" fill="' + face + '" stroke="' + line + '" stroke-width="2"/>' +
-      '<ellipse cx="36" cy="64" rx="7" ry="4" fill="' + blush + '"/><ellipse cx="84" cy="64" rx="7" ry="4" fill="' + blush + '"/>' +
-      '<path d="M56 62 l4 4 4 -4 z" fill="#e08a7a"/>' +
-      eyes + mouth +
-      '<path d="M34 62 l-12 -4 M34 68 l-12 2 M86 62 l12 -4 M86 68 l12 2" stroke="' + line + '" stroke-width="1.5" stroke-linecap="round"/>' +
-      extra;
+    // 鼻子
+    var nose = px(56, 62, 6, 4, pink);
+    $('cat-svg').innerHTML = base + eyes + nose + mouth + decor;
+  }
+
+  // 像素爱心
+  function heart(x, y, color) {
+    var p = function (dx, dy) { return '<rect x="' + (x + dx) + '" y="' + (y + dy) + '" width="4" height="4" fill="' + color + '"/>'; };
+    return p(4,0)+p(12,0)+p(0,4)+p(4,4)+p(8,4)+p(12,4)+p(16,4)+
+           p(0,8)+p(4,8)+p(8,8)+p(12,8)+p(16,8)+p(4,12)+p(8,12)+p(12,12)+p(8,16);
+  }
+  // 像素毒药瓶
+  function poison(x, y) {
+    var p = function (dx, dy, c) { return '<rect x="' + (x + dx) + '" y="' + (y + dy) + '" width="4" height="4" fill="' + c + '"/>'; };
+    return p(6,0,'#888')+p(10,0,'#888')+p(8,4,'#ccc')+
+           p(4,8,'#7ED957')+p(8,8,'#7ED957')+p(12,8,'#7ED957')+
+           p(4,12,'#4CAF50')+p(8,12,'#4CAF50')+p(12,12,'#4CAF50')+p(16,12,'#4CAF50')+
+           p(4,16,'#4CAF50')+p(8,16,'#4CAF50')+p(12,16,'#4CAF50')+p(16,16,'#4CAF50')+
+           p(8,20,'#2E7D32')+p(12,20,'#2E7D32')+
+           p(12,10,'#FFF')+p(14,12,'#FFF'); // 骷髅高光点
   }
 
   function renderMood(mood) {
@@ -226,27 +263,6 @@
     ctx.textAlign = 'left'; ctx.fillText(mx.toFixed(q.decimals == null ? 0 : q.decimals), pl + 2, pt + 9);
   }
 
-  // ---------- Top picks ----------
-  function renderTop(data) {
-    var box = $('top-picks');
-    var ids = data.topPicks || [];
-    var items = ids.map(function (id) {
-      return (data.items || []).find(function (it) { return it.id === id; });
-    }).filter(Boolean);
-    if (!items.length) items = (data.items || []).slice(0, 8);
-    $('top-count').textContent = items.length + ' 条 · 已智能去重';
-    if (!items.length) { box.innerHTML = '<div class="empty-state">暂无要点数据</div>'; return; }
-    box.innerHTML = items.map(function (it, i) {
-      return '<a class="top-card ' + (it.sentiment || 'neutral') + '" href="' + esc(it.sourceUrl || '#') +
-        '" target="_blank" rel="noopener"><span class="rank">' + (i + 1) + '</span>' +
-        '<h3 class="tc-title">' + esc(it.title) + '</h3>' +
-        '<div class="tc-meta"><span class="topic-chip">' + esc(it.subtopic || '综合') + '</span>' +
-        '<span>' + esc(normMarket(it.market)) + '</span><span>' + esc(it.source || '') + '</span>' +
-        '<span>' + esc(fmtTime(it.publishedAt)) + '</span></div>' +
-        '<p class="tc-view">' + esc(it.tradingView || it.summary || '') + '</p></a>';
-    }).join('');
-  }
-
   // ---------- 筛选 chips ----------
   function renderSubtopicChips(data) {
     var counts = {};
@@ -301,7 +317,6 @@
       state.data = news;
       $('update-time').textContent = '更新于 ' + fullTime((news.meta || {}).generatedAt) + ' · 近 ' + ((news.meta || {}).windowHours || 24) + '小时';
       renderMood(news.mood);
-      renderTop(news);
       renderSubtopicChips(news);
       renderFeed(news);
     }
@@ -317,8 +332,27 @@
   function showBanner(msg, isError) {
     var b = $('status-banner'); b.textContent = msg; b.className = 'status-banner' + (isError ? ' error' : '');
   }
+  // 轻提示 toast：刷新后明确反馈，避免用户以为没反应
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $('toast');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'toast'; el.className = 'toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2200);
+  }
+  function flashTimestamp() {
+    var el = $('update-time');
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
   function loadData(force) {
     var btn = $('refresh-btn'); btn.classList.add('spinning');
+    var beforeGen = state.data && (state.data.meta || {}).generatedAt;
+    var startedAt = Date.now();
     Promise.all([
       fetchJSON(NEWS_URL, force).catch(function () { return null; }),
       fetchJSON(QUOTES_URL, force).catch(function () { return null; })
@@ -326,22 +360,34 @@
       var news = res[0], quotes = res[1];
       var gotNews = news && Array.isArray(news.items);
       var gotQuotes = quotes && Array.isArray(quotes.quotes);
-      if (gotNews) {
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(news)); } catch (e) {}
-      }
-      if (gotQuotes) {
-        try { localStorage.setItem(QCache_KEY, JSON.stringify(quotes)); } catch (e) {}
-      }
+      if (gotNews) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(news)); } catch (e) {} }
+      if (gotQuotes) { try { localStorage.setItem(QCache_KEY, JSON.stringify(quotes)); } catch (e) {} }
       var cNews = gotNews ? news : safeParse(CACHE_KEY);
       var cQuotes = gotQuotes ? quotes : safeParse(QCache_KEY);
       if (cNews || cQuotes) renderAll(cNews, cQuotes);
+
       if (!gotNews && !cNews) {
-        if (!state.data) $('top-picks').innerHTML = '<div class="empty-state">数据加载失败，请点击右上角刷新</div>';
         showBanner('数据加载失败，请检查网络', true);
+        if (force) toast('刷新失败 · 请检查网络');
       } else if (!navigator.onLine) {
         showBanner('当前离线，展示缓存数据（可能非最新）', true);
+        if (force) toast('离线中 · 展示缓存数据');
       } else {
         showBanner('');
+        if (force) {
+          // 至少转一圈再提示，视觉上更像"真的刷新了"
+          var wait = Math.max(0, 450 - (Date.now() - startedAt));
+          setTimeout(function () {
+            var newGen = cNews && (cNews.meta || {}).generatedAt;
+            if (newGen && beforeGen && newGen !== beforeGen) {
+              toast('已更新至 ' + fullTime(newGen));
+              flashTimestamp();
+            } else {
+              toast('已是最新 · 每日 7:30 自动更新');
+              flashTimestamp();
+            }
+          }, wait);
+        }
       }
     }).finally(function () { btn.classList.remove('spinning'); });
   }
@@ -349,6 +395,7 @@
 
   // ---------- 交互 ----------
   $('refresh-btn').addEventListener('click', function () { loadData(true); });
+  $('update-time').addEventListener('click', function () { loadData(true); }); // 顶部"更新于"也可点
   $('chart-close').addEventListener('click', closeChart);
   $('chart-modal').addEventListener('click', function (e) { if (e.target === $('chart-modal')) closeChart(); });
   $('chart-tabs').addEventListener('click', function (e) {
