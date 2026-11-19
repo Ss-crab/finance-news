@@ -214,6 +214,77 @@ def dedup(items):
     return groups
 
 
+# 二级主题标签：市场 -> 主题（按标题/摘要关键词）
+SUBTOPICS = [
+    (["降息", "加息", "利率", "美联储", "央行", "货币政策", "fed", "rate"],
+     "货币政策"),
+    (["通胀", "cpi", "物价", "ppi", "inflation"], "通胀数据"),
+    (["财报", "业绩", "盈利", "营收", "earnings", "revenue"], "企业财报"),
+    (["关税", "贸易", "制裁", "tariff", "trade", "sanction"], "国际贸易"),
+    (["监管", "证监会", "政策", "新规", "regulation", "policy"], "监管政策"),
+    (["地缘", "战争", "冲突", "war", "military"], "地缘政治"),
+    (["黄金", "白银", "原油", "比特币", "加密", "gold", "oil", "bitcoin"], "大宗与加密"),
+    (["房地产", "楼市", "地产", "property"], "房地产"),
+    (["科技", "芯片", "半导体", "ai", "人工智能", "chip"], "科技产业"),
+    (["就业", "非农", "失业", "employment", "payroll"], "就业数据"),
+]
+
+
+def get_subtopic(item):
+    text = f"{item.get('title','')} {item.get('summary','')}".lower()
+    for words, topic in SUBTOPICS:
+        if any(w.lower() in text for w in words):
+            return topic
+    return "综合"
+
+
+def compute_mood(items, quotes_path):
+    """综合新闻情绪与行情涨跌，计算多空程度指数(-100空 ~ +100多)与猫猫心情。
+
+    得分构成：新闻情绪占比 60%，风险资产(股指)涨跌占比 40%。
+    返回 (score, cat_key, cat_mood, label, breakdown)
+    """
+    # 新闻情绪分：-1 ~ +1
+    pos = sum(1 for it in items if it.get("sentiment") == "positive")
+    neg = sum(1 for it in items if it.get("sentiment") == "negative")
+    total = max(pos + neg, 1)
+    news_score = (pos - neg) / total  # -1 ~ +1
+
+    # 行情分：股指涨跌均值，映射到 -1 ~ +1（±3% 封顶）
+    market_score = 0.0
+    market_n = 0
+    try:
+        with open(quotes_path, "r", encoding="utf-8") as fh:
+            qdata = json.load(fh)
+        for q in qdata.get("quotes", []):
+            if q.get("kind") == "index" and q.get("changePct") is not None:
+                market_score += max(-3, min(3, q["changePct"])) / 3.0
+                market_n += 1
+    except Exception:
+        pass
+    if market_n:
+        market_score /= market_n
+
+    raw = 0.6 * news_score + 0.4 * market_score  # -1 ~ +1
+    score = int(round(raw * 100))  # -100 ~ +100
+    score = max(-100, min(100, score))
+
+    # 猫猫心情映射
+    if score >= 60:
+        cat, mood, label = "bull", "猫猫起飞 🚀", "强烈偏多"
+    elif score >= 25:
+        cat, mood, label = "happy", "猫猫开心 😸", "偏多"
+    elif score > -25:
+        cat, mood, label = "calm", "猫猫淡定 😌", "中性震荡"
+    elif score > -60:
+        cat, mood, label = "worried", "猫猫担忧 😟", "偏空"
+    else:
+        cat, mood, label = "bear", "猫猫抱头 🙀", "强烈偏空"
+
+    breakdown = {"news": round(news_score * 100), "market": round(market_score * 100)}
+    return score, cat, mood, label, breakdown
+
+
 def main():
     if not os.path.exists(RAW_PATH):
         print(f"[FATAL] 找不到 {RAW_PATH}，请先运行 fetch.py", file=sys.stderr)
@@ -244,6 +315,7 @@ def main():
             "publishedAt": main_item.get("publishedAt"),
             "sentiment": sentiment,
             "impactTags": tags,
+            "subtopic": get_subtopic(main_item),
             "tradingView": trading_view(main_item, market, tags, sentiment),
         }
         # 供评分使用的时间
@@ -258,14 +330,28 @@ def main():
     # 排序：重要性降序，其次时间降序
     processed.sort(key=lambda x: (x["importance"], x.get("publishedAt") or ""), reverse=True)
 
-    # Top picks：重要性 >=4 的前 6 条，不足则取前 5
-    top = [it["id"] for it in processed if it["importance"] >= 4][:6]
-    if not top:
-        top = [it["id"] for it in processed[:5]]
+    # Top picks：重要性 >=4 的前 8 条（适中精简），不足则取前 8
+    top = [it["id"] for it in processed if it["importance"] >= 4][:8]
+    if len(top) < 8:
+        for it in processed:
+            if it["id"] not in top and len(top) < 8:
+                top.append(it["id"])
     for it in processed:
         del it["_published_dt"]
 
+    # 多空程度 + 猫猫心情
+    QUOTES_PATH = os.path.join(ROOT, "docs", "quotes.json")
+    score, cat, cat_mood, mood_label, breakdown = compute_mood(processed, QUOTES_PATH)
+
     out = {
+        "mood": {
+            "score": score,
+            "cat": cat,
+            "catMood": cat_mood,
+            "label": mood_label,
+            "breakdown": breakdown,
+            "scale": "-100 极空 / 0 中性 / +100 极多",
+        },
         "meta": {
             "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "windowStart": meta.get("windowStart"),
