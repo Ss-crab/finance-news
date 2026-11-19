@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a2b4a">
+  <meta name="description" content="隔夜财经速览 — 过去24小时全球重点金融新闻与行情，辅助次日交易判断">
+  <title>隔夜财经速览</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 晨昏线动态背景 -->
+  <div class="sky-bg" id="sky-bg" aria-hidden="true">
+    <div class="sky-horizon"></div>
+    <div class="sky-sun" id="sky-sun"></div>
+    <div class="sky-stars" id="sky-stars"></div>
+  </div>
+
+  <header class="app-header">
+    <div class="header-main">
+      <div>
+        <h1 class="app-title">隔夜财经速览</h1>
+        <p class="app-subtitle" id="update-time">正在加载...</p>
+      </div>
+      <button id="refresh-btn" class="icon-btn" aria-label="刷新数据" title="刷新数据">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="status-banner" class="status-banner hidden"></div>
+  </header>
+
+  <main>
+    <!-- 猫猫心情 + 多空程度 -->
+    <section class="mood-hero" id="mood-hero">
+      <div class="cat-box" id="cat-box">
+        <svg id="cat-svg" viewBox="0 0 120 120" width="92" height="92" aria-label="市场心情猫猫"></svg>
+      </div>
+      <div class="mood-info">
+        <div class="mood-label" id="mood-label">市场情绪</div>
+        <div class="mood-cat-mood" id="mood-cat-mood">加载中…</div>
+        <div class="mood-scale-wrap">
+          <div class="mood-scale">
+            <div class="mood-scale-fill" id="mood-fill"></div>
+            <div class="mood-scale-mid"></div>
+          </div>
+          <div class="mood-scale-labels"><span>极空</span><span>中性</span><span>极多</span></div>
+        </div>
+      </div>
+      <div class="mood-score" id="mood-score">--</div>
+    </section>
+
+    <!-- 行情速览 -->
+    <section class="section" id="quotes-section">
+      <div class="section-head">
+        <h2 class="section-title"><span class="sec-icon">◇</span> 行情速览</h2>
+        <span class="hint-text">点击查看走势</span>
+      </div>
+      <div class="quotes-grid" id="quotes-grid"></div>
+    </section>
+
+    <!-- 隔夜要点速览 -->
+    <section class="section" id="top-section">
+      <div class="section-head">
+        <h2 class="section-title"><span class="sec-icon">✦</span> 隔夜要点</h2>
+        <span class="hint-text" id="top-count"></span>
+      </div>
+      <div id="top-picks" class="top-picks"></div>
+    </section>
+
+    <!-- 筛选控制 -->
+    <section class="filter-bar" id="filter-bar">
+      <div class="filter-row">
+        <span class="filter-label">重要性</span>
+        <input type="range" id="importance-range" min="1" max="5" value="1" step="1">
+        <span class="filter-value" id="importance-value">全部</span>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">主题</span>
+        <div class="chip-scroll" id="subtopic-chips"></div>
+      </div>
+    </section>
+
+    <!-- 分区导航 -->
+    <nav class="tabs" id="market-tabs" aria-label="市场分区">
+      <button class="tab active" data-market="all">全部</button>
+      <button class="tab" data-market="A股">A股</button>
+      <button class="tab" data-market="美股宏观">美股</button>
+      <button class="tab" data-market="港股">港股</button>
+      <button class="tab" data-market="加密商品外汇">商品外汇</button>
+      <button class="tab" data-market="债券">债券</button>
+    </nav>
+
+    <!-- 新闻列表 -->
+    <section class="section" id="feed-section">
+      <div class="section-head">
+        <h2 class="section-title" id="feed-title">全部要闻 · 时间线</h2>
+        <span class="count-badge" id="feed-count"></span>
+      </div>
+      <div id="feed" class="feed"></div>
+    </section>
+
+    <!-- 免责声明 -->
+    <footer class="disclaimer">
+      <strong>免责声明</strong>
+      <p>本应用仅汇总公开新闻并提供客观影响分析，不构成任何投资建议或要约。数据来自第三方，可能存在延迟或误差；市场有风险，决策请自主判断并核对原文。行情中的"参考值"为静态参考，不代表实时价格。</p>
+      <p class="foot-note">数据来源：新浪财经、东方财富、Google News、CNBC、MarketWatch、美联储等公开渠道</p>
+    </footer>
+  </main>
+
+  <!-- 走势图弹窗 -->
+  <div class="modal-overlay hidden" id="chart-modal">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="chart-title">走势</div>
+          <div class="modal-price" id="chart-price"></div>
+        </div>
+        <button class="modal-close" id="chart-close" aria-label="关闭">×</button>
+      </div>
+      <div class="chart-tabs" id="chart-tabs">
+        <button class="chart-tab" data-range="7">1周</button>
+        <button class="chart-tab active" data-range="14">2周</button>
+        <button class="chart-tab" data-range="30">1月</button>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-canvas"></canvas></div>
+      <div class="chart-note" id="chart-note"></div>
+    </div>
+  </div>
+
+  <!-- 下拉刷新指示 -->
+  <div id="pull-indicator" class="pull-indicator">下拉刷新</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
