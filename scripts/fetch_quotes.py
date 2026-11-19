@@ -48,6 +48,14 @@ TARGETS = [
      "em_secids": ["100.UST10Y", "100.US10Y", "100.BD10Y"], "decimals": 2},
     {"key": "cn10y", "name": "中债10Y", "unit": "%", "kind": "bond",
      "em_secids": ["100.CN10Y", "100.CHN10Y"], "decimals": 2},
+    {"key": "crb", "name": "CRB商品", "unit": "", "kind": "em_index",
+     "em_secids": ["100.CRB"], "em_scale": 100, "hist_sid": "100.CRB", "decimals": 2},
+    {"key": "dxy", "name": "美元指数", "unit": "", "kind": "em_index",
+     "em_secids": ["100.UDI"], "em_scale": 100, "hist_sid": "100.UDI", "decimals": 2},
+    {"key": "shcomposite", "name": "上证指数", "unit": "", "kind": "cn_index",
+     "sina_code": "s_sh000001", "hist_symbol": "sh000001", "decimals": 2},
+    {"key": "chinext", "name": "创业板指", "unit": "", "kind": "cn_index",
+     "sina_code": "s_sz399006", "hist_symbol": "sz399006", "decimals": 2},
 ]
 
 
@@ -68,6 +76,18 @@ def fetch_sina_spot(codes, s):
             code = line.split("=")[0].replace("var hq_str_", "").strip()
             out[code] = line.split('"')[1]
     return out
+
+
+def parse_cn_index_spot(raw):
+    # 新浪 A股指数简版: 名称,现价,涨跌额,涨跌幅,成交量,成交额
+    # e.g. 上证指数,3577.6174,-10.2143,-0.28,4129127,63690906
+    p = raw.split(",")
+    if len(p) < 4:
+        return None
+    try:
+        return {"price": float(p[1]), "change": float(p[2]), "changePct": float(p[3])}
+    except Exception:
+        return None
 
 
 def parse_index_spot(raw):
@@ -115,6 +135,38 @@ def fetch_index_history(symbol, s, days=30):
     return out
 
 
+def fetch_tencent_history(symbol, s, days=30):
+    """腾讯 A股指数日K：fqkline，返回 [[date, open, close, high, low, vol], ...]"""
+    url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={symbol},day,,,{days},qfq"
+    r = s.get(url, timeout=12)
+    d = r.json().get("data", {}).get(symbol, {})
+    k = d.get("qfqday") or d.get("day") or []
+    out = []
+    for row in k:
+        try:
+            out.append({"date": row[0], "close": float(row[2])})
+        except Exception:
+            continue
+    return out[-days:]
+
+
+def fetch_em_history(secid, scale, s, days=30):
+    """东财日K：push2his，klines 每条 '日期,开,收,高,低,量'"""
+    url = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+    params = {"secid": secid, "klt": "101", "fqt": "0", "lmt": str(days),
+              "fields1": "f1,f2,f3", "fields2": "f51,f52,f53,f54,f55,f56"}
+    r = s.get(url, params=params, timeout=12)
+    klines = (r.json().get("data") or {}).get("klines") or []
+    out = []
+    for line in klines:
+        p = line.split(",")
+        try:
+            out.append({"date": p[0], "close": float(p[2]) / scale})
+        except Exception:
+            continue
+    return out[-days:]
+
+
 def fetch_metal_history(symbol, s, days=30):
     """新浪外盘日K：GlobalFuturesService.getGlobalFuturesDailyKLine"""
     url = ("https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t=/"
@@ -155,6 +207,27 @@ def fetch_bond_spot(secids, s):
     return None
 
 
+def fetch_em_index(secids, scale, s):
+    """东财 push2 指数（CRB/美元指数等），价格按 scale 缩放，f170 已是百分比"""
+    url = "https://push2.eastmoney.com/api/qt/stock/get"
+    for sid in secids:
+        try:
+            r = s.get(url, params={"secid": sid, "fields": "f43,f57,f58,f169,f170"},
+                      timeout=10)
+            d = r.json().get("data")
+            if d and d.get("f43") is not None:
+                return {
+                    "price": round(float(d["f43"]) / scale, 3),
+                    "change": None,
+                    "changePct": round(float(d.get("f170") or 0) / 100.0, 3),
+                    "secid": sid,
+                }
+        except Exception:
+            continue
+        time.sleep(0.5)
+    return None
+
+
 def main():
     s = session()
     results = []
@@ -187,6 +260,27 @@ def main():
                 else:
                     item["history"] = fetch_metal_history(t["hist_symbol"], s)
                 item["ok"] = item["price"] is not None
+            elif t["kind"] == "cn_index" and "sina_code" in t:
+                raw = spot.get(t["sina_code"], "")
+                parsed = parse_cn_index_spot(raw)
+                if parsed:
+                    item.update(parsed)
+                    item["ok"] = True
+                if "hist_symbol" in t:
+                    try:
+                        item["history"] = fetch_tencent_history(t["hist_symbol"], s)
+                    except Exception:
+                        pass
+            elif t["kind"] == "em_index":
+                e = fetch_em_index(t.get("em_secids", []), t.get("em_scale", 100), s)
+                if e:
+                    item.update(e)
+                    item["ok"] = True
+                if "hist_sid" in t:
+                    try:
+                        item["history"] = fetch_em_history(t["hist_sid"], t.get("em_scale", 100), s)
+                    except Exception:
+                        pass
             elif t["kind"] == "bond":
                 b = fetch_bond_spot(t.get("em_secids", []), s)
                 if b:

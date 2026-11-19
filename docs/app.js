@@ -41,27 +41,33 @@
   function updateSky() {
     var h = new Date().getHours() + new Date().getMinutes() / 60;
     var sky = $('sky-bg'), sun = $('sky-sun'), stars = $('sky-stars'), horizon = document.querySelector('.sky-horizon');
-    var top, bottom, horizonColor, sunColor, sunTop, starOpacity;
-    // 统一走明亮温暖的「黄昏感」色调，整体提亮，弱化黑夜的沉闷
+    var header = document.querySelector('.app-header');
+    var top, bottom, horizonColor, sunColor, sunTop, starOpacity, headerGrad;
+    // 标题栏沿用参考图：深蓝紫云层 -> 暖橙金光的晨昏线渐变
     if (h >= 6 && h < 9) {          // 黎明：暖粉金
       var t = (h - 6) / 3;
       top = mix([176, 168, 214], [150, 196, 232], t);
       bottom = mix([255, 210, 180], [255, 226, 200], t);
       horizonColor = 'rgba(255,190,150,.6)'; sunColor = '#ffe0a8'; sunTop = 140 - t * 50; starOpacity = 0.12 * (1 - t);
+      headerGrad = 'linear-gradient(115deg, rgba(74,84,138,.9), rgba(176,132,150,.85) 55%, rgba(232,176,132,.9))';
     } else if (h >= 9 && h < 16) {   // 白天：明亮暖蓝
       top = '#a8cdee'; bottom = '#f3f7fb'; horizonColor = 'rgba(255,235,210,.45)'; sunColor = '#fff6d8'; sunTop = 40; starOpacity = 0;
-    } else if (h >= 16 && h < 19) {  // 黄昏：明亮橙粉紫（主基调）
+      headerGrad = 'linear-gradient(115deg, rgba(56,96,150,.88), rgba(96,140,186,.85) 55%, rgba(176,196,214,.88))';
+    } else if (h >= 16 && h < 19) {  // 黄昏：明亮橙粉紫（主基调，贴合参考图）
       var t2 = (h - 16) / 3;
       top = mix([168, 150, 210], [196, 138, 186], t2);
       bottom = mix([255, 214, 170], [255, 186, 168], t2);
       horizonColor = 'rgba(255,150,110,.6)'; sunColor = '#ffb27a'; sunTop = 80 + t2 * 55; starOpacity = t2 * 0.18;
-    } else {                          // 夜晚：柔和蓝紫，仍保留微光但不压抑
+      headerGrad = 'linear-gradient(115deg, rgba(52,58,112,.92), rgba(146,92,120,.88) 52%, rgba(224,142,96,.92))';
+    } else {                          // 夜晚：深蓝紫配暖橙余晖
       top = '#5b6a97'; bottom = '#98a4c4'; horizonColor = 'rgba(150,165,205,.4)'; sunColor = '#f4f0e0'; sunTop = 170; starOpacity = 0.5;
+      headerGrad = 'linear-gradient(115deg, rgba(38,44,86,.92), rgba(78,64,110,.9) 55%, rgba(138,90,96,.92))';
       sun.style.opacity = '0.45';
     }
     if (h >= 6 && h < 19) sun.style.opacity = '1';
     var grad = 'linear-gradient(to bottom, ' + (typeof top === 'string' ? top : rgb(top)) + ', ' + (typeof bottom === 'string' ? bottom : rgb(bottom)) + ')';
     sky.style.background = grad;
+    if (header) header.style.background = headerGrad;
     horizon.style.background = horizonColor;
     sun.style.background = sunColor;
     sun.style.top = sunTop + 'px';
@@ -71,74 +77,96 @@
   function mix(a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); }
   function rgb(a) { return 'rgb(' + a[0] + ',' + a[1] + ',' + a[2] + ')'; }
 
-  // ---------- 像素猫猫 SVG ----------
-  // 用像素方块网格绘制猫头，心情不同则表情与装饰不同
+  // ---------- 像素猫猫 SVG（重点色英短）----------
+  // 浅奶油身体 + 深棕灰重点色(耳/面罩/鼻) + 蓝眼睛 + 圆脸大腮
   function renderCat(cat) {
-    var face = '#F7B733', faceDark = '#E89A20', outline = '#5A3A12', pink = '#FF8C94', ink = '#3A2A12';
+    // 重点色英短配色
+    var body = '#EFE6D6', bodyShade = '#DCCDB6', point = '#6E5B50', pointDark = '#4A3A31';
+    var innerEar = '#E8A6A6', nosePink = '#D98E93', eyeBlue = '#4FB3DC', eyeDeep = '#2C7FA8';
     var px = function (x, y, w, h, fill) {
       return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + fill + '"/>';
     };
 
-    // 基础猫头（像素块，单位 px，画布 120x120）
+    // 基础猫头：圆脸大腮，深色耳朵（重点色）
     var base =
-      // 耳朵
-      px(20, 18, 10, 10, outline) + px(30, 28, 50, 6, outline) +
-      px(22, 20, 6, 6, face) + px(88, 18, 10, 10, outline) + px(88, 20, 6, 6, face) +
-      // 头部主体（轮廓 + 脸）
-      px(28, 30, 62, 8, outline) +
-      px(24, 38, 70, 44, outline) +
-      px(28, 42, 62, 36, face) +
+      // 耳朵外轮廓（深色 = 重点色）
+      px(16, 28, 12, 8, pointDark) + px(20, 18, 10, 12, pointDark) +
+      px(78, 18, 10, 12, pointDark) + px(80, 28, 12, 8, pointDark) +
+      // 内耳粉
+      px(22, 24, 6, 8, innerEar) + px(80, 24, 6, 8, innerEar) +
+      // 头部轮廓（深棕灰描边）
+      px(26, 30, 46, 8, pointDark) +
+      px(20, 38, 58, 6, pointDark) +
+      px(16, 44, 66, 30, pointDark) +
+      px(20, 74, 58, 8, pointDark) +
+      // 脸：浅奶油身体色 + 圆脸大腮
+      px(24, 40, 50, 6, body) +
+      px(20, 46, 58, 26, body) +
+      px(24, 72, 50, 6, body) +
+      // 脸颊两侧大腮（浅色凸起）
+      px(16, 54, 8, 14, body) + px(74, 54, 8, 14, body) +
+      // 面罩（重点色：口鼻周围深灰）
+      px(40, 54, 20, 4, point) +
+      px(36, 58, 28, 12, point) +
+      px(40, 70, 20, 6, point) +
       // 脸颊阴影
-      px(28, 70, 62, 8, faceDark) +
-      // 内耳
-      px(34, 40, 10, 10, pink) + px(74, 40, 10, 10, pink);
+      px(24, 74, 50, 4, bodyShade);
 
     var eyes = '', mouth = '', decor = '';
-    if (cat === 'bull') {           // 极多：星星眼 + 大笑 + 爱心
-      eyes = px(40, 52, 8, 8, '#FFF') + px(42, 54, 4, 4, '#FFD400') +
-             px(70, 52, 8, 8, '#FFF') + px(72, 54, 4, 4, '#FFD400');
-      mouth = px(52, 66, 14, 6, ink) + px(56, 72, 6, 4, '#E8536B');
-      // 爱心装饰（右上）
-      decor = heart(100, 20, '#FF4D6D') + heart(16, 44, '#FF7A99');
-    } else if (cat === 'happy') {   // 偏多：弯眼笑 + 小爱心
-      eyes = px(38, 54, 12, 4, ink) + px(36, 52, 4, 4, ink) + px(48, 52, 4, 4, ink) +
-             px(68, 54, 12, 4, ink) + px(66, 52, 4, 4, ink) + px(78, 52, 4, 4, ink);
-      mouth = px(54, 66, 10, 4, ink) + px(52, 64, 4, 4, ink) + px(62, 64, 4, 4, ink);
-      decor = heart(100, 26, '#FF6B8A');
-    } else if (cat === 'worried') { // 偏空：耷拉眼 + 波浪嘴 + 汗滴
-      eyes = px(38, 56, 12, 4, ink) + px(38, 52, 4, 4, ink) + px(46, 52, 4, 4, ink) +
-             px(68, 56, 12, 4, ink) + px(68, 52, 4, 4, ink) + px(76, 52, 4, 4, ink);
-      mouth = px(52, 68, 6, 3, ink) + px(58, 66, 6, 3, ink) + px(64, 68, 6, 3, ink);
-      decor = px(96, 40, 5, 9, '#7EC8E3') + px(95, 49, 7, 3, '#7EC8E3'); // 汗滴
-    } else if (cat === 'bear') {    // 极空：X眼 + 大开口 + 毒药
-      eyes = px(38, 50, 4, 4, ink) + px(42, 54, 4, 4, ink) + px(46, 58, 4, 4, ink) + px(42, 62, 4, 4, ink) + px(38, 58, 4, 4, ink) +
-             px(68, 50, 4, 4, ink) + px(72, 54, 4, 4, ink) + px(76, 58, 4, 4, ink) + px(72, 62, 4, 4, ink) + px(68, 58, 4, 4, ink);
-      mouth = px(52, 66, 14, 10, '#5A3A12') + px(54, 68, 10, 6, '#2A1A0A');
-      decor = poison(98, 26);       // 毒药瓶
-    } else {                        // calm 淡定：圆眼 + 一字嘴
-      eyes = px(40, 54, 6, 6, ink) + px(72, 54, 6, 6, ink);
-      mouth = px(54, 68, 10, 3, ink);
+    if (cat === 'bull') {           // 极多：闪亮蓝星眼 + 大笑 + 双大爱心
+      eyes = px(34, 50, 10, 10, eyeBlue) + px(36, 52, 6, 6, '#EAF9FF') + px(38, 54, 3, 3, eyeDeep) +
+             px(56, 50, 10, 10, eyeBlue) + px(58, 52, 6, 6, '#EAF9FF') + px(60, 54, 3, 3, eyeDeep);
+      mouth = px(44, 64, 14, 5, pointDark) + px(48, 69, 6, 3, nosePink);
+      decor = heartBig(88, 12, '#FF3D6E') + heartBig(6, 40, '#FF7A9C');
+    } else if (cat === 'happy') {   // 偏多：眯眼笑 + 大爱心
+      eyes = px(34, 54, 10, 3, eyeDeep) + px(32, 52, 3, 3, eyeDeep) + px(43, 52, 3, 3, eyeDeep) +
+             px(56, 54, 10, 3, eyeDeep) + px(54, 52, 3, 3, eyeDeep) + px(65, 52, 3, 3, eyeDeep);
+      mouth = px(44, 64, 12, 3, pointDark) + px(42, 62, 3, 3, pointDark) + px(55, 62, 3, 3, pointDark);
+      decor = heartBig(90, 20, '#FF5C85');
+    } else if (cat === 'worried') { // 偏空：耷拉蓝眼 + 波浪嘴 + 大汗滴
+      eyes = px(34, 56, 10, 3, eyeDeep) + px(34, 53, 3, 3, eyeDeep) + px(41, 53, 3, 3, eyeDeep) +
+             px(56, 56, 10, 3, eyeDeep) + px(56, 53, 3, 3, eyeDeep) + px(63, 53, 3, 3, eyeDeep);
+      mouth = px(44, 66, 5, 3, pointDark) + px(49, 64, 5, 3, pointDark) + px(54, 66, 5, 3, pointDark);
+      decor = sweatBig(90, 42);
+    } else if (cat === 'bear') {    // 极空：X眼 + 大开口 + 大毒药瓶
+      eyes = px(34, 52, 3, 3, pointDark) + px(38, 56, 3, 3, pointDark) + px(42, 60, 3, 3, pointDark) + px(38, 64, 3, 3, pointDark) + px(34, 60, 3, 3, pointDark) +
+             px(62, 52, 3, 3, pointDark) + px(58, 56, 3, 3, pointDark) + px(54, 60, 3, 3, pointDark) + px(58, 64, 3, 3, pointDark) + px(62, 60, 3, 3, pointDark);
+      mouth = px(42, 64, 16, 10, pointDark) + px(45, 66, 10, 6, '#2A1A0A');
+      decor = poisonBig(88, 26);
+    } else {                        // calm 淡定：圆蓝眼 + 一字嘴
+      eyes = px(36, 54, 7, 7, eyeBlue) + px(38, 56, 3, 3, eyeDeep) +
+             px(57, 54, 7, 7, eyeBlue) + px(59, 56, 3, 3, eyeDeep);
+      mouth = px(46, 66, 10, 3, pointDark);
     }
-    // 鼻子
-    var nose = px(56, 62, 6, 4, pink);
+    // 粉色鼻子（重点色）
+    var nose = px(46, 62, 8, 4, nosePink);
     $('cat-svg').innerHTML = base + eyes + nose + mouth + decor;
   }
 
-  // 像素爱心
-  function heart(x, y, color) {
-    var p = function (dx, dy) { return '<rect x="' + (x + dx) + '" y="' + (y + dy) + '" width="4" height="4" fill="' + color + '"/>'; };
-    return p(4,0)+p(12,0)+p(0,4)+p(4,4)+p(8,4)+p(12,4)+p(16,4)+
-           p(0,8)+p(4,8)+p(8,8)+p(12,8)+p(16,8)+p(4,12)+p(8,12)+p(12,12)+p(8,16);
+  // 大号像素爱心（6px 网格）
+  function heartBig(x, y, color) {
+    var u = 6;
+    var p = function (col, row) { return '<rect x="' + (x + col * u) + '" y="' + (y + row * u) + '" width="' + u + '" height="' + u + '" fill="' + color + '"/>'; };
+    return p(1,0)+p(3,0)+p(0,1)+p(1,1)+p(2,1)+p(3,1)+p(4,1)+
+           p(0,2)+p(1,2)+p(2,2)+p(3,2)+p(4,2)+
+           p(1,3)+p(2,3)+p(3,3)+p(2,4);
   }
-  // 像素毒药瓶
-  function poison(x, y) {
-    var p = function (dx, dy, c) { return '<rect x="' + (x + dx) + '" y="' + (y + dy) + '" width="4" height="4" fill="' + c + '"/>'; };
-    return p(6,0,'#888')+p(10,0,'#888')+p(8,4,'#ccc')+
-           p(4,8,'#7ED957')+p(8,8,'#7ED957')+p(12,8,'#7ED957')+
-           p(4,12,'#4CAF50')+p(8,12,'#4CAF50')+p(12,12,'#4CAF50')+p(16,12,'#4CAF50')+
-           p(4,16,'#4CAF50')+p(8,16,'#4CAF50')+p(12,16,'#4CAF50')+p(16,16,'#4CAF50')+
-           p(8,20,'#2E7D32')+p(12,20,'#2E7D32')+
-           p(12,10,'#FFF')+p(14,12,'#FFF'); // 骷髅高光点
+  // 大号汗滴（蓝色，6px 网格）
+  function sweatBig(x, y) {
+    var u = 6;
+    var p = function (col, row, c) { return '<rect x="' + (x + col * u) + '" y="' + (y + row * u) + '" width="' + u + '" height="' + u + '" fill="' + (c || '#6FC3E8') + '"/>'; };
+    return p(1,0)+p(2,0)+p(0,1)+p(1,1)+p(2,1)+p(3,1)+p(1,2)+p(2,2)+p(1,3,'#3E9BC4')+p(2,3,'#3E9BC4');
+  }
+  // 大号像素毒药瓶（6px 网格）
+  function poisonBig(x, y) {
+    var u = 6;
+    var p = function (col, row, c) { return '<rect x="' + (x + col * u) + '" y="' + (y + row * u) + '" width="' + u + '" height="' + u + '" fill="' + c + '"/>'; };
+    return p(1,0,'#999')+p(2,0,'#999')+p(1,1,'#CCC')+p(2,1,'#CCC')+
+           p(0,2,'#8FE07A')+p(1,2,'#8FE07A')+p(2,2,'#8FE07A')+p(3,2,'#8FE07A')+
+           p(0,3,'#4CAF50')+p(1,3,'#4CAF50')+p(2,3,'#4CAF50')+p(3,3,'#4CAF50')+
+           p(0,4,'#4CAF50')+p(1,4,'#4CAF50')+p(2,4,'#4CAF50')+p(3,4,'#4CAF50')+
+           p(1,5,'#2E7D32')+p(2,5,'#2E7D32')+
+           p(2,2,'#FFF')+p(1,3,'#FFF'); // 高光/骷髅
   }
 
   function renderMood(mood) {
