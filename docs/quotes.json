@@ -1,6 +1,6 @@
 {
   "meta": {
-    "fetchedAt": "2026-11-19T13:03:52.707034Z",
+    "fetchedAt": "2026-11-20T00:07:24.187077Z",
     "sources": [
       "新浪财经（指数/贵金属实时与日K）",
       "东方财富（债券收益率）"
@@ -18,10 +18,6 @@
       "change": 38.98,
       "changePct": 0.59,
       "history": [
-        {
-          "date": "2026-10-08",
-          "close": 7765.36
-        },
         {
           "date": "2026-10-09",
           "close": 7811.54
@@ -137,6 +133,10 @@
         {
           "date": "2026-11-18",
           "close": 7323.63
+        },
+        {
+          "date": "2026-11-19",
+          "close": 7175.83
         }
       ],
       "ok": true
@@ -151,10 +151,6 @@
       "change": 99.37,
       "changePct": 0.44,
       "history": [
-        {
-          "date": "2026-10-08",
-          "close": 30725.81
-        },
         {
           "date": "2026-10-09",
           "close": 30883.15
@@ -270,6 +266,10 @@
         {
           "date": "2026-11-18",
           "close": 27116.26
+        },
+        {
+          "date": "2026-11-19",
+          "close": 26517.05
         }
       ],
       "ok": true
@@ -284,10 +284,6 @@
       "change": 299.97,
       "changePct": 0.65,
       "history": [
-        {
-          "date": "2026-10-08",
-          "close": 51231.64
-        },
         {
           "date": "2026-10-09",
           "close": 51654.95
@@ -403,6 +399,10 @@
         {
           "date": "2026-11-18",
           "close": 50198.17
+        },
+        {
+          "date": "2026-11-19",
+          "close": 49097.06
         }
       ],
       "ok": true
@@ -413,14 +413,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 2,
-      "price": 3714.08,
-      "change": -27.82,
-      "changePct": -0.74,
+      "price": 3611.984,
+      "change": -73.516,
+      "changePct": -1.99,
       "history": [
-        {
-          "date": "2026-10-09",
-          "close": 4220.0
-        },
         {
           "date": "2026-10-12",
           "close": 4195.7
@@ -535,7 +531,11 @@
         },
         {
           "date": "2026-11-19",
-          "close": 3720.0
+          "close": 3627.8
+        },
+        {
+          "date": "2026-11-20",
+          "close": 3605.8
         }
       ],
       "ok": true
@@ -546,14 +546,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 3,
-      "price": 44.859,
-      "change": -0.2,
-      "changePct": -0.44,
+      "price": 43.229,
+      "change": -1.652,
+      "changePct": -3.68,
       "history": [
-        {
-          "date": "2026-10-09",
-          "close": 61.1
-        },
         {
           "date": "2026-10-12",
           "close": 60.565
@@ -668,7 +664,11 @@
         },
         {
           "date": "2026-11-19",
-          "close": 45.135
+          "close": 43.335
+        },
+        {
+          "date": "2026-11-20",
+          "close": 43.01
         }
       ],
       "ok": true
@@ -707,9 +707,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 371.6,
+      "price": 371.57,
       "change": null,
-      "changePct": -2.31,
+      "changePct": -0.01,
       "history": [],
       "ok": true,
       "secid": "100.CRB"
@@ -720,9 +720,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 103.7,
+      "price": 103.95,
       "change": null,
-      "changePct": -0.1,
+      "changePct": 0.0,
       "history": [],
       "ok": true,
       "secid": "100.UDI"
