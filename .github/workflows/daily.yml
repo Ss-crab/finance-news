@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# 同一时间只运行一个数据生成任务，降低并发写入 main 的概率。
+concurrency:
+  group: finance-news-data
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,5 +48,17 @@ jobs:
             echo "数据无变化，跳过提交"
           else
             git commit -m "chore: 更新隔夜财经数据 $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
+            # 运行期间若 main 前进，先把数据提交重放到最新 main 再推送。
+            # 抓取文件是生成快照，冲突时保留本次刚生成的数据。
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase -X theirs origin/main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "推送遇到并发更新，第 ${attempt} 次重试"
+              sleep $((attempt * 2))
+            done
+            echo "多次尝试后仍无法推送生成的数据" >&2
+            exit 1
           fi
