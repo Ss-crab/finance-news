@@ -478,6 +478,7 @@
     if (!items.length) { box.innerHTML = '<div class="empty-state">当前筛选下暂无新闻</div>'; return; }
     box.innerHTML = items.map(function (it) {
       var tags = (it.impactTags || []).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+      if (it.newsType) tags = '<span class="tag">' + esc(it.newsType) + '</span>' + tags;
       var url = it.sourceUrl || '#';
       return '<article class="card"><div class="card-head">' +
         '<span class="market-chip">' + esc(normMarket(it.market)) + '</span>' +

@@ -80,24 +80,46 @@ def normalize(text):
 
 
 def classify(item):
-    # 源的 marketHint 优先级最高（中文快讯归 A股）
+    # marketHint 只作为弱提示；新闻源查询主题不等于新闻实际涉及市场。
     hint = item.get("marketHint", "")
-    hint_map = {"中国快讯": "A股"}
-    if hint in hint_map:
-        return hint_map[hint]
-    for market in MARKETS:
-        if market in hint:
-            return market
-
     text = f"{item.get('title','')} {item.get('summary','')}".lower()
-    scores = {m: 0 for m in MARKETS}
+    scores = {m: 0.0 for m in MARKETS}
     for market, words in MARKET_KEYWORDS.items():
         for w in words:
             if w.lower() in text:
-                scores[market] += 1
-    best = max(scores, key=scores.get)
-    # 无明确信号时，中文语境默认归 A股；英文源标题通常含明确关键词
-    return best if scores[best] > 0 else "A股"
+                scores[market] += 1.0
+    # 宏观和债券关键词很宽泛，降低央行/收益率等词的独立判别权重。
+    if scores["债券"] and not any(w in text for w in ["美债", "国债", "债券", "treasury", "bond"]):
+        scores["债券"] *= 0.35
+    hint_market = next((m for m in MARKETS if m in hint), None)
+    if hint_market:
+        scores[hint_market] += 0.35
+    ordered = sorted(scores.items(), key=lambda pair: pair[1], reverse=True)
+    # 不确定项放入全球宏观，避免错误地伪装成 A 股新闻。
+    return ordered[0][0] if ordered[0][1] >= 1.0 else "美股宏观"
+
+
+NEWS_TYPES = [
+    (["央行", "美联储", "降息", "加息", "利率", "货币政策", "fed", "rate decision"], "货币政策"),
+    (["cpi", "ppi", "通胀", "物价", "inflation"], "通胀数据"),
+    (["非农", "就业", "失业率", "payroll", "employment"], "就业数据"),
+    (["财报", "业绩", "营收", "净利润", "盈利", "earnings", "revenue"], "公司业绩"),
+    (["监管", "证监会", "新规", "处罚", "批准", "regulation"], "监管与政策"),
+    (["关税", "贸易战", "制裁", "出口管制", "tariff", "sanction"], "贸易与制裁"),
+    (["战争", "冲突", "袭击", "地缘", "war", "conflict"], "地缘事件"),
+    (["ipo", "上市", "退市", "增发", "回购", "并购", "重组"], "资本运作"),
+    (["黄金", "白银", "原油", "天然气", "比特币", "以太坊", "gold", "oil", "bitcoin"], "商品与数字资产"),
+    (["人民币", "美元指数", "汇率", "外汇", "yuan", "forex"], "汇率"),
+    (["房地产", "楼市", "房价", "地产", "property", "housing"], "房地产"),
+]
+
+
+def classify_news_type(item):
+    text = f"{item.get('title','')} {item.get('summary','')}".lower()
+    for words, label in NEWS_TYPES:
+        if any(w.lower() in text for w in words):
+            return label
+    return "市场与公司动态"
 
 
 def score_importance(item, dup_count):
@@ -241,7 +263,7 @@ def get_subtopic(item):
 def compute_mood(items, quotes_path):
     """严谨的多空评分。
 
-    总分 = 新闻面 50% + 行情面 50%，各子项先归一到 -1..+1 再加权。
+    总分 = 行情面 60% + 新闻面 40%，按重要性与置信度加权。
 
     新闻面（50%）：按重要性加权，高影响(importance≥4)权重 2.0，中(3)1.0，低(≤2)0.5。
       sentiment: positive=+1 / negative=-1 / neutral=0。
@@ -319,7 +341,7 @@ def compute_mood(items, quotes_path):
         market_score = 0.0
 
     # ---------- 合成 ----------
-    raw = 0.5 * news_score + 0.5 * market_score
+    raw = 0.4 * news_score + 0.6 * market_score
     score = int(round(max(-1.0, min(1.0, raw)) * 100))
 
     # ---------- 分级 ----------
@@ -345,7 +367,7 @@ def compute_mood(items, quotes_path):
             "commodity": round(cm_score * 100) if cm_score is not None else None,
             "fx": round(fx_score * 100) if fx_score is not None else None,
         },
-        "weights": {"news": 50, "market": 50,
+        "weights": {"news": 40, "market": 60,
                     "aShare": 20, "usStock": 20, "commodity": 6, "fx": 4},
     }
     return score, cat, mood, label, breakdown
@@ -382,6 +404,7 @@ def main():
             "sentiment": sentiment,
             "impactTags": tags,
             "subtopic": get_subtopic(main_item),
+            "newsType": classify_news_type(main_item),
             "tradingView": trading_view(main_item, market, tags, sentiment),
         }
         # 供评分使用的时间
@@ -417,7 +440,7 @@ def main():
             "label": mood_label,
             "breakdown": breakdown,
             "scale": "-100 极空 / ≤-50 偏空 / -18~18 中性 / ≥18 偏多 / ≥50 极多",
-            "rules": "新闻面50%(按重要性加权+小样本折算) + 行情面50%(A股20/美股20/商品6/汇率4, ±3%封顶)",
+            "rules": "行情面60%（A股/美股/商品/汇率分层，日涨跌幅封顶归一）+新闻面40%（重要性加权并按有效样本量折减置信度）",
         },
         "meta": {
             "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
