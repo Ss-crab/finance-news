@@ -1,6 +1,6 @@
 {
   "meta": {
-    "fetchedAt": "2026-11-22T00:00:16.922358Z",
+    "fetchedAt": "2026-11-23T00:06:59.492374Z",
     "sources": [
       "新浪财经（指数/贵金属实时与日K）",
       "东方财富（债券收益率）"
@@ -413,14 +413,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 2,
-      "price": 3535.39,
-      "change": -150.11,
-      "changePct": -4.07,
+      "price": 3576.04,
+      "change": 60.64,
+      "changePct": 1.72,
       "history": [
-        {
-          "date": "2026-10-12",
-          "close": 4195.7
-        },
         {
           "date": "2026-10-13",
           "close": 4184.2
@@ -536,6 +532,10 @@
         {
           "date": "2026-11-20",
           "close": 3538.5
+        },
+        {
+          "date": "2026-11-23",
+          "close": 3583.5
         }
       ],
       "ok": true
@@ -546,14 +546,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 3,
-      "price": 41.5,
-      "change": -3.381,
-      "changePct": -7.53,
+      "price": 42.56,
+      "change": 1.001,
+      "changePct": 2.41,
       "history": [
-        {
-          "date": "2026-10-12",
-          "close": 60.565
-        },
         {
           "date": "2026-10-13",
           "close": 59.39
@@ -669,6 +665,10 @@
         {
           "date": "2026-11-20",
           "close": 41.55
+        },
+        {
+          "date": "2026-11-23",
+          "close": 42.685
         }
       ],
       "ok": true
@@ -722,7 +722,7 @@
       "decimals": 2,
       "price": 103.84,
       "change": null,
-      "changePct": -0.11,
+      "changePct": 0.0,
       "history": [],
       "ok": true,
       "secid": "100.UDI"
