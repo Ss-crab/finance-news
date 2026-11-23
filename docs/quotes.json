@@ -1,6 +1,6 @@
 {
   "meta": {
-    "fetchedAt": "2026-11-23T00:06:59.492374Z",
+    "fetchedAt": "2026-11-23T12:21:44.912333Z",
     "sources": [
       "新浪财经（指数/贵金属实时与日K）",
       "东方财富（债券收益率）"
@@ -413,9 +413,9 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 2,
-      "price": 3576.04,
-      "change": 60.64,
-      "changePct": 1.72,
+      "price": 3617.5,
+      "change": 102.1,
+      "changePct": 2.9,
       "history": [
         {
           "date": "2026-10-13",
@@ -535,7 +535,7 @@
         },
         {
           "date": "2026-11-23",
-          "close": 3583.5
+          "close": 3617.3
         }
       ],
       "ok": true
@@ -546,9 +546,9 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 3,
-      "price": 42.56,
-      "change": 1.001,
-      "changePct": 2.41,
+      "price": 42.786,
+      "change": 1.227,
+      "changePct": 2.95,
       "history": [
         {
           "date": "2026-10-13",
@@ -668,7 +668,7 @@
         },
         {
           "date": "2026-11-23",
-          "close": 42.685
+          "close": 42.785
         }
       ],
       "ok": true
@@ -720,9 +720,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 103.84,
+      "price": 103.9,
       "change": null,
-      "changePct": 0.0,
+      "changePct": 0.06,
       "history": [],
       "ok": true,
       "secid": "100.UDI"
@@ -733,14 +733,10 @@
       "unit": "",
       "kind": "cn_index",
       "decimals": 2,
-      "price": 3533.7929,
-      "change": -43.8245,
-      "changePct": -1.22,
+      "price": 3538.948,
+      "change": 5.1551,
+      "changePct": 0.15,
       "history": [
-        {
-          "date": "2026-10-12",
-          "close": 3797.24
-        },
         {
           "date": "2026-10-13",
           "close": 3800.86
@@ -856,6 +852,10 @@
         {
           "date": "2026-11-20",
           "close": 3533.79
+        },
+        {
+          "date": "2026-11-23",
+          "close": 3538.95
         }
       ],
       "ok": true
@@ -866,14 +866,10 @@
       "unit": "",
       "kind": "cn_index",
       "decimals": 2,
-      "price": 2212.13,
-      "change": -81.214,
-      "changePct": -3.54,
+      "price": 2280.2,
+      "change": 68.077,
+      "changePct": 3.08,
       "history": [
-        {
-          "date": "2026-10-12",
-          "close": 2963.82
-        },
         {
           "date": "2026-10-13",
           "close": 2958.34
@@ -989,6 +985,10 @@
         {
           "date": "2026-11-20",
           "close": 2212.13
+        },
+        {
+          "date": "2026-11-23",
+          "close": 2280.2
         }
       ],
       "ok": true
