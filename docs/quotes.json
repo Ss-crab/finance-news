@@ -1,6 +1,6 @@
 {
   "meta": {
-    "fetchedAt": "2026-11-26T12:25:09.600830Z",
+    "fetchedAt": "2026-11-27T00:21:45.233401Z",
     "sources": [
       "新浪财经（指数/贵金属实时与日K）",
       "东方财富（债券收益率）"
@@ -413,14 +413,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 2,
-      "price": 3591.49,
-      "change": 26.89,
-      "changePct": 0.75,
+      "price": 3594.725,
+      "change": 30.125,
+      "changePct": 0.85,
       "history": [
-        {
-          "date": "2026-10-16",
-          "close": 4186.5
-        },
         {
           "date": "2026-10-19",
           "close": 4160.2
@@ -535,7 +531,11 @@
         },
         {
           "date": "2026-11-26",
-          "close": 3596.3
+          "close": 3593.1
+        },
+        {
+          "date": "2026-11-27",
+          "close": 3596.5
         }
       ],
       "ok": true
@@ -546,14 +546,10 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 3,
-      "price": 41.669,
-      "change": 1.131,
-      "changePct": 2.79,
+      "price": 41.728,
+      "change": 1.19,
+      "changePct": 2.94,
       "history": [
-        {
-          "date": "2026-10-16",
-          "close": 57.13
-        },
         {
           "date": "2026-10-19",
           "close": 57.23
@@ -668,7 +664,11 @@
         },
         {
           "date": "2026-11-26",
-          "close": 41.885
+          "close": 41.73
+        },
+        {
+          "date": "2026-11-27",
+          "close": 41.725
         }
       ],
       "ok": true
@@ -720,9 +720,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 103.77,
+      "price": 103.82,
       "change": null,
-      "changePct": 0.06,
+      "changePct": 0.03,
       "history": [],
       "ok": true,
       "secid": "100.UDI"
