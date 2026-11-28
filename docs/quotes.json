@@ -1,6 +1,6 @@
 {
   "meta": {
-    "fetchedAt": "2026-11-27T12:21:35.130193Z",
+    "fetchedAt": "2026-11-28T00:15:31.765699Z",
     "sources": [
       "新浪财经（指数/贵金属实时与日K）",
       "东方财富（债券收益率）"
@@ -152,10 +152,6 @@
       "changePct": 0.44,
       "history": [
         {
-          "date": "2026-10-15",
-          "close": 29935.59
-        },
-        {
           "date": "2026-10-16",
           "close": 29187.55
         },
@@ -270,6 +266,10 @@
         {
           "date": "2026-11-25",
           "close": 26046.9
+        },
+        {
+          "date": "2026-11-27",
+          "close": 26726.39
         }
       ],
       "ok": true
@@ -284,10 +284,6 @@
       "change": 299.97,
       "changePct": 0.65,
       "history": [
-        {
-          "date": "2026-10-15",
-          "close": 52177.69
-        },
         {
           "date": "2026-10-16",
           "close": 52002.41
@@ -403,6 +399,10 @@
         {
           "date": "2026-11-25",
           "close": 50182.95
+        },
+        {
+          "date": "2026-11-27",
+          "close": 50774.94
         }
       ],
       "ok": true
@@ -413,9 +413,9 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 2,
-      "price": 3699.514,
-      "change": 134.914,
-      "changePct": 3.78,
+      "price": 3684.27,
+      "change": 119.67,
+      "changePct": 3.36,
       "history": [
         {
           "date": "2026-10-19",
@@ -535,7 +535,7 @@
         },
         {
           "date": "2026-11-27",
-          "close": 3697.7
+          "close": 3681.1
         }
       ],
       "ok": true
@@ -546,9 +546,9 @@
       "unit": "$",
       "kind": "metal",
       "decimals": 3,
-      "price": 44.305,
-      "change": 3.767,
-      "changePct": 9.29,
+      "price": 44.064,
+      "change": 3.526,
+      "changePct": 8.7,
       "history": [
         {
           "date": "2026-10-19",
@@ -668,7 +668,7 @@
         },
         {
           "date": "2026-11-27",
-          "close": 44.2
+          "close": 43.98
         }
       ],
       "ok": true
@@ -707,9 +707,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 368.5,
+      "price": 372.0,
       "change": null,
-      "changePct": 0.55,
+      "changePct": 0.95,
       "history": [],
       "ok": true,
       "secid": "100.CRB"
@@ -720,9 +720,9 @@
       "unit": "",
       "kind": "em_index",
       "decimals": 2,
-      "price": 103.8,
+      "price": 104.04,
       "change": null,
-      "changePct": 0.01,
+      "changePct": 0.24,
       "history": [],
       "ok": true,
       "secid": "100.UDI"
